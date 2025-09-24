@@ -22,16 +22,19 @@ public class Main {
         ReplRunner repl = new ReplRunner();
 
         repl.getRegistry()
+                
                 // Register command #1    
                 .register("hello", "Prints a greeting", (r, a) -> {
                     r.println("Hello from the REPL!");
                 })
+                
                 // Register command #2    
                 .register("add", "Adds two numbers", (r, a) -> {
                     int a1 = a.next(int.class);
                     int a2 = a.next(int.class);
                     r.println("Sum: " + (a1 + a2));
                 })
+                
                 // Register command #3    
                 .register(List.of("exit", "e"), "Stops the REPL", (r, a) -> r.stop());
 
