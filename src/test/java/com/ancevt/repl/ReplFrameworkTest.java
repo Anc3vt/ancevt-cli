@@ -1,8 +1,8 @@
-package com.ancevt.util.repl;
+package com.ancevt.repl;
 
-import com.ancevt.util.repl.argument.ArgumentParseException;
-import com.ancevt.util.repl.argument.ArgumentSplitHelper;
-import com.ancevt.util.repl.argument.ArgumentParser;
+import com.ancevt.repl.argument.ArgumentParseException;
+import com.ancevt.repl.argument.ArgumentParser;
+import com.ancevt.repl.argument.ArgumentSplitHelper;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;

@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ancevt.util.repl.argument;
+package com.ancevt.repl.argument;
 
 import java.util.Iterator;
 import java.util.function.Consumer;

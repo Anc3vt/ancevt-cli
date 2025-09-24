@@ -15,10 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ancevt.util.repl;
+package com.ancevt.repl;
 
 
-import com.ancevt.util.repl.argument.ArgumentParser;
+import com.ancevt.repl.argument.ArgumentParser;
 
 import java.util.ArrayList;
 import java.util.List;
