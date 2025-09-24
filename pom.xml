@@ -6,7 +6,7 @@
 
     <groupId>com.ancevt.util</groupId>
     <artifactId>repl</artifactId>
-    <version>0.0.0.1-SNAPSHOT</version>
+    <version>1,0.0</version>
 
     <name>REPL</name>
     <url>https://githib.com/Anc3vt/repl.git</url>
