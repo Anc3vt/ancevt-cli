@@ -15,20 +15,25 @@ A lightweight and extensible REPL (Read-Eval-Print Loop) framework for building 
 ## Getting Started
 
 ```java
+import java.util.List;
+
 public class Main {
     public static void main(String[] args) throws IOException {
         ReplRunner repl = new ReplRunner();
 
         repl.getRegistry()
-            .register("hello", "Prints a greeting", (r, a) -> {
-                r.println("Hello from the REPL!");
-            })
-            .register("add", "Adds two numbers", (r, a) -> {
-                int a1 = a.next(int.class);
-                int a2 = a.next(int.class);
-                r.println("Sum: " + (a1 + a2));
-            })
-            .register("exit", "Stops the REPL", (r, a) -> r.stop());
+                // Register command #1    
+                .register("hello", "Prints a greeting", (r, a) -> {
+                    r.println("Hello from the REPL!");
+                })
+                // Register command #2    
+                .register("add", "Adds two numbers", (r, a) -> {
+                    int a1 = a.next(int.class);
+                    int a2 = a.next(int.class);
+                    r.println("Sum: " + (a1 + a2));
+                })
+                // Register command #3    
+                .register(List.of("exit", "e"), "Stops the REPL", (r, a) -> r.stop());
 
         repl.start();
     }
