@@ -17,29 +17,29 @@
  */
 package com.ancevt.util.repl;
 
-public class NoSuchCommandException extends Exception {
+public class UnknownCommandException extends Exception {
 
     private String commandWord;
     private String commandLine;
-    private CommandSet commandSet;
+    private CommandRegistry registry;
 
-    public NoSuchCommandException(String message, String commandWord, String commandLine, CommandSet commandSet) {
+    public UnknownCommandException(String message, String commandWord, String commandLine, CommandRegistry registry) {
         super(message);
         this.commandWord = commandWord;
         this.commandLine = commandLine;
-        this.commandSet = commandSet;
+        this.registry = registry;
     }
 
-    public NoSuchCommandException(String message) {
+    public UnknownCommandException(String message) {
         super(message);
     }
 
-    public NoSuchCommandException(String message, Throwable cause) {
+    public UnknownCommandException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public CommandSet getCommandSet() {
-        return commandSet;
+    public CommandRegistry getRegistry() {
+        return registry;
     }
 
     public String getCommandWord() {

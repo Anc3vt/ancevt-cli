@@ -18,35 +18,62 @@
 package com.ancevt.util.repl;
 
 
-import com.ancevt.util.repl.args.Args;
+import com.ancevt.util.repl.argument.ArgumentParser;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Command {
 
-    private final String commandWord;
+    private final List<String> commandWords;
     private final String description;
 
-    private final ReplAction action;
+    private final CommandHandler action;
 
-    public Command(String commandWord, ReplAction action) {
-        this.commandWord = commandWord;
+    public Command(List<String> commandWords, String description, CommandHandler action) {
+        if (commandWords.isEmpty()) {
+            throw new IllegalArgumentException("commandWords must not be empty");
+        } else {
+            this.commandWords = commandWords;
+            this.description = description;
+            this.action = action;
+        }
+    }
+
+    public Command(List<String> commandWords, CommandHandler action) {
+        if (commandWords.isEmpty()) {
+            throw new IllegalArgumentException("commandWords must not be empty");
+        } else {
+            this.commandWords = commandWords;
+            this.description = "";
+            this.action = action;
+        }
+    }
+
+    public Command(String commandWord, CommandHandler action) {
+        this.commandWords = new ArrayList<>();
         this.description = "";
         this.action = action;
+
+        commandWords.add(commandWord);
     }
 
-    public Command(String commandWord, String description, ReplAction action) {
-        this.commandWord = commandWord;
+    public Command(String commandWord, String description, CommandHandler action) {
+        this.commandWords = new ArrayList<>();
         this.description = description;
         this.action = action;
+
+        commandWords.add(commandWord);
     }
 
-    public ReplAction getAction() {
+    public CommandHandler getAction() {
         return action;
     }
 
-    public void execute(Repl repl, String commandLine) {
-        Args args = Args.of(commandLine);
-        args.skip();
-        action.execute(repl, args);
+    public void execute(ReplRunner replRunner, String commandLine) {
+        ArgumentParser argumentParser = ArgumentParser.parse(commandLine);
+        argumentParser.skip();
+        action.handle(replRunner, argumentParser);
     }
 
     public String getDescription() {
@@ -54,13 +81,17 @@ public class Command {
     }
 
     public String getCommandWord() {
-        return commandWord;
+        return commandWords.get(0);
+    }
+
+    public List<String> getCommandWords() {
+        return commandWords;
     }
 
     @Override
     public String toString() {
         return "Command{" +
-                "commandWord='" + commandWord + '\'' +
+                "commandWords='" + commandWords + '\'' +
                 ", description='" + description + '\'' +
                 ", action=" + action +
                 '}';

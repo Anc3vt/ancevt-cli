@@ -15,11 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ancevt.util.repl.args;
+package com.ancevt.util.repl.argument;
+
+import java.util.Iterator;
+import java.util.function.Consumer;
 
 import static java.lang.String.format;
 
-public class Args {
+public class ArgumentParser implements Iterable<String> {
 
     private final String source;
 
@@ -31,22 +34,22 @@ public class Args {
 
     private String lastContainsCheckedKey;
 
-    public Args(String source) {
+    public ArgumentParser(String source) {
         this.source = source;
-        elements = ArgsSplitter.split(source, '\0');
+        elements = ArgumentSplitHelper.split(source, '\0');
     }
 
-    public Args(String source, String delimiterChar) {
+    public ArgumentParser(String source, String delimiterChar) {
         this.source = source;
-        elements = ArgsSplitter.split(source, delimiterChar);
+        elements = ArgumentSplitHelper.split(source, delimiterChar);
     }
 
-    public Args(String source, char delimiterChar) {
+    public ArgumentParser(String source, char delimiterChar) {
         this.source = source;
-        elements = ArgsSplitter.split(source, delimiterChar);
+        elements = ArgumentSplitHelper.split(source, delimiterChar);
     }
 
-    public Args(String[] args) {
+    public ArgumentParser(String[] args) {
         this.source = collectSource(args);
         elements = args;
     }
@@ -105,13 +108,13 @@ public class Args {
 
     public <T> T next(Class<T> type) {
         if (index >= elements.length) {
-            throw new ArgsException(format("next: Index out of bounds, index: %d, elements: %d", index, elements.length));
+            throw new ArgumentParseException(format("next: Index out of bounds, index: %d, elements: %d", index, elements.length));
         }
 
         T result = get(type, index);
 
         if (result == null) {
-            throw new ArgsException(String.format("Args exception no such element at index %d, type: %s", index, type));
+            throw new ArgumentParseException(String.format("Args exception no such element at index %d, type: %s", index, type));
         }
 
         index++;
@@ -120,7 +123,7 @@ public class Args {
 
     public <T> T next(Class<T> type, T defaultValue) {
         if (index >= elements.length) {
-            throw new ArgsException(format("next: Index out of bounds, index: %d, elements: %d", index, elements.length));
+            throw new ArgumentParseException(format("next: Index out of bounds, index: %d, elements: %d", index, elements.length));
         }
 
         T result = get(type, index, defaultValue);
@@ -134,7 +137,7 @@ public class Args {
 
     public void setIndex(int index) {
         if (index >= elements.length) {
-            throw new ArgsException(format("Index out of bounds, index: %d, elements: %d", index, elements.length));
+            throw new ArgumentParseException(format("Index out of bounds, index: %d, elements: %d", index, elements.length));
         }
 
         this.index = index;
@@ -236,7 +239,7 @@ public class Args {
         } else if (type == byte.class || type == Byte.class) {
             return (T) Byte.valueOf(element);
         } else {
-            throw new ArgsException("Type " + type + " not supported");
+            throw new ArgumentParseException("Type " + type + " not supported");
         }
     }
 
@@ -256,20 +259,44 @@ public class Args {
         return problem;
     }
 
-    public static Args of(String source) {
-        return new Args(source);
+    public static ArgumentParser parse(String source) {
+        return new ArgumentParser(source);
     }
 
-    public static Args of(String[] args) {
-        return new Args(args);
+    public static ArgumentParser parse(String[] args) {
+        return new ArgumentParser(args);
     }
 
-    public static Args of(String source, String delimiterChar) {
-        return new Args(source, delimiterChar);
+    public static ArgumentParser parse(String source, String delimiterChar) {
+        return new ArgumentParser(source, delimiterChar);
     }
 
-    public static Args of(String source, char delimiterChar) {
-        return new Args(source, delimiterChar);
+    public static ArgumentParser parse(String source, char delimiterChar) {
+        return new ArgumentParser(source, delimiterChar);
     }
 
+    @Override
+    public Iterator<String> iterator() {
+        return new Iterator<String>() {
+            private int i = 0;
+
+            @Override
+            public boolean hasNext() {
+                return i < elements.length;
+            }
+
+            @Override
+            public String next() {
+                if (!hasNext()) throw new java.util.NoSuchElementException();
+                return elements[i++];
+            }
+        };
+    }
+
+    @Override
+    public void forEach(Consumer<? super String> action) {
+        for (String element : elements) {
+            action.accept(element);
+        }
+    }
 }

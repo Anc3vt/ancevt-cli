@@ -19,42 +19,9 @@
         </developer>
     </developers>
 
-    <repositories>
-        <repository>
-            <id>ancevt</id>
-            <url>https://packages.ancevt.com/releases</url>
-            <snapshots>
-                <enabled>false</enabled>
-                <updatePolicy>always</updatePolicy>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>ancevt-snapshot</id>
-            <url>https://packages.ancevt.com/snapshots</url>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-            </snapshots>
-        </repository>
-    </repositories>
-
-    <distributionManagement>
-        <repository>
-            <id>ancevt</id>
-            <name>Ancevt packages repository</name>
-            <url>https://packages.ancevt.com/releases</url>
-        </repository>
-        <snapshotRepository>
-            <id>ancevt-snapshots</id>
-            <name>Ancevt packages repository (snapshots)</name>
-            <url>https://packages.ancevt.com/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
-        <args.version>2.1.2</args.version>
         <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
@@ -104,41 +71,4 @@
 
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>assembly</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-assembly-plugin</artifactId>
-                        <version>${maven-assembly-plugin.version}</version>
-                        <configuration>
-                            <archive>
-                                <manifest>
-                                    <addClasspath/>
-                                    <mainClass>com.ancevt.Application</mainClass>
-                                </manifest>
-                            </archive>
-                            <descriptorRefs>
-                                <descriptorRef>jar-with-dependencies</descriptorRef>
-                            </descriptorRefs>
-                            <finalName>empty-project</finalName>
-                            <appendAssemblyId>false</appendAssemblyId>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>make-assembly</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>single</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>

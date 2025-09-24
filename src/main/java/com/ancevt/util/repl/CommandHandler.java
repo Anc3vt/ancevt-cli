@@ -15,26 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ancevt.util.repl.args;
 
-public class ArgsException extends RuntimeException {
+package com.ancevt.util.repl;
 
-    public ArgsException() {
-    }
 
-    public ArgsException(String message) {
-        super(message);
-    }
+import com.ancevt.util.repl.argument.ArgumentParser;
 
-    public ArgsException(String message, Throwable cause) {
-        super(message, cause);
-    }
+@FunctionalInterface
+public interface CommandHandler {
 
-    public ArgsException(Throwable cause) {
-        super(cause);
-    }
-
-    public ArgsException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
+    void handle(ReplRunner replRunner, ArgumentParser argumentParser);
 }

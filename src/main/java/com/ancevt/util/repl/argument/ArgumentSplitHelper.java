@@ -15,12 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ancevt.util.repl.args;
+package com.ancevt.util.repl.argument;
 
 import java.util.ArrayList;
 import java.util.List;
 
-class ArgsSplitter {
+public class ArgumentSplitHelper {
 
     private static final String SPACE_CHARS = "\n\t\r\b ";
 
@@ -80,7 +80,7 @@ class ArgsSplitter {
 
     public static String[] split(String source, String delimiterChar) {
         if (delimiterChar.length() != 1) {
-            throw new ArgsException("delimiter string must contain one character");
+            throw new ArgumentParseException("delimiter string must contain one character");
         }
         return split(source, delimiterChar.charAt(0));
     }

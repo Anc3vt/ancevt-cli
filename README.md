@@ -1,112 +1,204 @@
-# REPL CLI
+# REPL Framework for Java
 
-A simple yet flexible Java-based REPL (Read-Eval-Print Loop) framework with typed argument parsing, pluggable commands, and an extensible architecture for building developer-friendly CLI tools or embedded scripting interfaces.
+A lightweight and extensible REPL (Read-Eval-Print Loop) framework for building interactive CLI applications in Java.
 
-## ✨ Features
+## Features
 
-* 🔄 **REPL loop**: customizable command loop, input/output streams.
-* 🧠 **Args parser**: type-safe argument parsing with quotes, escape sequences, and option-style key lookup.
-* 🔌 **Pluggable commands**: define commands with `ReplAction`, register in `CommandSet`.
-* 📜 **Formatted help**: auto-formatted command listings and descriptions.
-* ⚠️ **Error handling**: safe fallback for missing commands with `NoSuchCommandException`.
-
-## 🚀 Quick Start
-
-```java
-CommandSet commandSet = new CommandSet();
-
-commandSet.add("hello", (repl, args) -> {
-    repl.println("Hello, world!");
-});
-
-commandSet.add("echo", "Echo input back", (repl, args) -> {
-    while (args.hasNext()) {
-        repl.print(args.next() + " ");
-    }
-    repl.println("");
-});
-
-Repl repl = new Repl(commandSet);
-repl.start(System.in, System.out);
-```
-
-## 🧰 Components
-
-
-### Command System
-
-* `Command` — binds a word to a `ReplAction`
-* `CommandSet` — maintains the list and renders help output
-* `ReplAction` — functional interface: `(Repl repl, Args args) -> {}`
-
-### Repl Loop
-
-* Reads input line-by-line
-* Tokenizes using `Args`
-* Matches commands via `CommandSet`
-* Handles unknown input via `NoSuchCommandException`
-
-## 📦 Examples
-
-### 🔹 Basic Command with No Args
-```java
-commandSet.add("ping", (repl, args) -> {
-    repl.println("pong");
-});
-```
-
-### 🔹 Echo Command with Typed Args
-```java
-commandSet.add("echo", (repl, args) -> {
-    while (args.hasNext()) {
-        repl.print(args.next() + " ");
-    }
-    repl.println("");
-});
-```
-
-### 🔹 Command with Options (Key-Value)
-```java
-commandSet.add("greet", (repl, args) -> {
-    String name = args.get("--name", "stranger");
-    repl.println("Hello, " + name + "!");
-});
-
-// Example input:
-// greet --name Alice
-```
-
-### 🔹 Type-Safe Parsing
-```java
-commandSet.add("math", (repl, args) -> {
-    int a = args.get(Integer.class, "--a", 0);
-    int b = args.get(Integer.class, "--b", 0);
-    repl.println("Sum: " + (a + b));
-});
-
-// Example input:
-// math --a 10 --b 20
-```
-
-### 🔹 Formatted Help Listing
-```java
-commandSet.add("help", (repl, args) -> {
-    repl.println(commandSet.formattedCommandList());
-});
-```
-
-### 🔹 Exit Command
-```java
-commandSet.add("exit", (repl, args) -> {
-    repl.println("Goodbye!");
-    repl.stop();
-});
-```
-
-
-
+* Command registration with single or multiple aliases
+* Typed argument parsing (supports `int`, `boolean`, `double`, `String`, etc.)
+* Quoted and escaped arguments supported
+* Control REPL lifecycle: start, stop, and execute
+* Minimal setup, easy integration into any Java application
 
 ---
-Contact me:
-[me@ancevt.com](mailto:me@ancevt.com)
 
+## Getting Started
+
+```java
+public class Main {
+    public static void main(String[] args) throws IOException {
+        ReplRunner repl = new ReplRunner();
+
+        repl.getRegistry()
+            .register("hello", "Prints a greeting", (r, a) -> {
+                r.println("Hello from the REPL!");
+            })
+            .register("add", "Adds two numbers", (r, a) -> {
+                int a1 = a.next(int.class);
+                int a2 = a.next(int.class);
+                r.println("Sum: " + (a1 + a2));
+            })
+            .register("exit", "Stops the REPL", (r, a) -> r.stop());
+
+        repl.start();
+    }
+}
+```
+
+---
+
+## Argument Parsing Example
+
+```java
+ArgumentParser parser = ArgumentParser.parse("--port 8080 --debug true");
+
+int port = parser.get(int.class, "--port");
+boolean debug = parser.get(boolean.class, "--debug");
+```
+
+### With quoted values:
+
+```java
+ArgumentParser parser = ArgumentParser.parse("send \"Hello world\" user42");
+
+String message = parser.next();  // Hello world
+String user = parser.next();     // user42
+```
+
+---
+
+## Core Components
+
+* `ReplRunner` — The main REPL engine
+* `CommandRegistry` — Stores and manages registered commands
+* `Command` — Represents a single REPL command
+* `CommandHandler` — Functional interface for command handlers
+* `ArgumentParser` — Parses raw input into typed arguments
+* `ArgumentParseException` — Exception thrown on parsing errors
+* `UnknownCommandException` — Exception for unrecognized commands
+
+---
+
+# REPL Framework Examples
+
+Here are some additional usage examples demonstrating how to integrate and extend the REPL framework.
+
+---
+
+## Example 1: Echo Command
+
+```java
+repl.getRegistry().register("echo", "Echoes back the input", (r, a) -> {
+    while (a.hasNext()) {
+        r.print(a.next() + " ");
+    }
+    r.println("");
+});
+```
+
+**Usage:**
+
+```
+echo Hello World from REPL
+```
+
+**Output:**
+
+```
+Hello World from REPL
+```
+
+---
+
+## Example 2: Flag Parsing
+
+```java
+repl.getRegistry().register("config", "Parses flags", (r, a) -> {
+    if (a.contains("--debug")) {
+        r.println("Debug mode enabled");
+    }
+    String mode = a.get("--mode", "default");
+    r.println("Mode: " + mode);
+});
+```
+
+**Usage:**
+
+```
+config --debug --mode production
+```
+
+**Output:**
+
+```
+Debug mode enabled
+Mode: production
+```
+
+---
+
+## Example 3: Using Multiple Aliases
+
+```java
+repl.getRegistry().register(Arrays.asList("quit", "exit", "/q"), "Terminates the REPL", (r, a) -> r.stop());
+```
+
+**Usage:**
+
+```
+exit
+```
+
+---
+
+## Example 4: Argument Type Conversion
+
+```java
+repl.getRegistry().register("multiply", "Multiplies two integers", (r, a) -> {
+    int x = a.next(int.class);
+    int y = a.next(int.class);
+    r.println("Result: " + (x * y));
+});
+```
+
+**Usage:**
+
+```
+multiply 4 7
+```
+
+**Output:**
+
+```
+Result: 28
+```
+
+---
+
+## Example 5: Help Command with Prefix Filter
+
+```java
+repl.getRegistry().register("help", "Shows all or filtered commands", (r, a) -> {
+    String prefix = a.hasNext() ? a.next() : "";
+    r.println(r.getRegistry().formattedCommandList(prefix));
+});
+```
+
+**Usage:**
+
+```
+help
+help mu
+```
+
+**Output:**
+
+```
+Available commands:
+  echo                 Echoes back the input
+  config               Parses flags
+  multiply             Multiplies two integers
+  quit                 Terminates the REPL
+
+Available commands starting with 'mu':
+  multiply             Multiplies two integers
+```
+
+---
+
+These examples cover basic, intermediate, and advanced usage. You can easily extend the framework with custom commands, argument parsing, and REPL behaviors.
+
+
+## License
+
+[Apache 2.0 License](http://www.apache.org/licenses/LICENSE-2.0)

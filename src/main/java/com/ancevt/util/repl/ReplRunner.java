@@ -18,22 +18,29 @@
 package com.ancevt.util.repl;
 
 
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 
 import static java.lang.String.format;
 
-public class Repl {
+public class ReplRunner {
 
-    private final CommandSet commandSet;
+    private CommandRegistry registry;
     private boolean running;
 
     private InputStream inputStream;
 
     private OutputStream outputStream;
 
-    public Repl(CommandSet commandSet) {
-        this.commandSet = commandSet;
+    public ReplRunner() {
+        this.registry = new CommandRegistry();
+    }
+
+    public ReplRunner(CommandRegistry registry) {
+        this.registry = registry;
     }
 
     public InputStream getInputStream() {
@@ -52,9 +59,12 @@ public class Repl {
         this.outputStream = outputStream;
     }
 
+    public CommandRegistry getRegistry() {
+        return registry;
+    }
 
-    public CommandSet getCommandSet() {
-        return commandSet;
+    public void setRegistry(CommandRegistry commandRegistry) {
+        this.registry = commandRegistry;
     }
 
     public boolean isRunning() {
@@ -75,20 +85,22 @@ public class Repl {
         print(s + "\n");
     }
 
-    public void execute(String commandLine) throws NoSuchCommandException {
+    public void execute(String commandLine) throws UnknownCommandException {
         String[] tokens = commandLine.trim().split("\\s+");
         if (tokens.length == 0) return;
 
         String commandWord = tokens[0];
 
-        for (Command command : getCommandSet()) {
-            if (commandWord.equals(command.getCommandWord())) {
+        for (Command command : registry.getCommands()) {
+            if (commandWord.equals(command.getCommandWord()) ||
+                    command.getCommandWords().stream().anyMatch(s -> s.equals(commandWord))) {
+
                 command.execute(this, commandLine);
                 return;
             }
         }
 
-        throw new NoSuchCommandException(format("Unknown command: %s", commandWord), commandWord, commandLine, commandSet);
+        throw new UnknownCommandException(format("Unknown command: %s", commandWord), commandWord, commandLine, registry);
     }
 
     public void start(InputStream inputStream, OutputStream outputStream) throws IOException {
@@ -100,7 +112,7 @@ public class Repl {
         while (running && (line = bufferedReader.readLine()) != null) {
             try {
                 execute(line);
-            } catch (NoSuchCommandException e) {
+            } catch (UnknownCommandException e) {
                 outputStream.write(e.getMessage().getBytes(StandardCharsets.UTF_8));
                 outputStream.write("\n".getBytes(StandardCharsets.UTF_8));
             }
@@ -126,25 +138,28 @@ public class Repl {
 
     // Some dev sandbox
     public static void main(String[] args) throws IOException {
-        CommandSet commandSet = new CommandSet();
+        ReplRunner repl = new ReplRunner();
+        CommandRegistry registry = repl.getRegistry();
 
-        commandSet.add("test", (repl, a) -> {
-            System.out.println("tested");
-            String[] elements = a.getElements();
-            for (int i = 0; i < elements.length; i++) {
-                String element = elements[i];
-                System.out.println(i + "\t" + element);
+        registerDefaultCommands(registry, repl);
+        repl.start(System.in, System.out);
+    }
+
+    private static void registerDefaultCommands(CommandRegistry registry, ReplRunner repl) {
+        registry.register("test", "Prints each argument with index", (r, a) -> {
+            r.println("tested");
+            for (int i = 0; i < a.size(); i++) {
+                r.println(i + "\t" + a.getElements()[i]);
             }
         });
 
-        commandSet.add("help", (repl, a) -> {
-            System.out.println(commandSet.formattedCommandList());
+        registry.register("help", "Shows help info", (r, a) -> {
+            r.println(r.getRegistry().formattedCommandList());
         });
 
-        commandSet.add("exit", (repl, a) -> repl.stop());
-
-        Repl repl = new Repl(commandSet);
-        repl.start(System.in, System.out);
+        // java 8 style of List.of instead of List.of
+        registry.register(Arrays.asList("exit", "/q"), "Exit the REPL", (r, a) -> r.stop());
 
     }
+
 }
