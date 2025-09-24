@@ -156,7 +156,6 @@ public class ReplRunner {
             r.println(r.getRegistry().formattedCommandList());
         });
 
-        // java 8 style of List.of instead of List.of
         registry.register(Arrays.asList("exit", "/q"), "Exit the REPL", (r, a) -> r.stop());
 
     }

@@ -25,63 +25,70 @@ public class ArgumentSplitHelper {
     private static final String SPACE_CHARS = "\n\t\r\b ";
 
     static String[] split(final String source, char delimiterChar) {
-        final List<String> list = new ArrayList<>();
-        final StringBuilder stringBuilder = new StringBuilder();
-        int str = -1;
-        int i = 0;
-        final int len = source.length();
-        while (i < len) {
-            final char c = source.charAt(i++);
-            if (c == '\\') {
-                if (i == len) {
-                    break;
-                }
-                final char c2 = source.charAt(i++);
-                stringBuilder.append(c2);
+        final List<String> result = new ArrayList<>();
+        final StringBuilder buffer = new StringBuilder();
+
+        final int length = source.length();
+        boolean insideQuotes = false;
+        char quoteChar = 0;
+
+        for (int i = 0; i < length; ) {
+            char current = source.charAt(i++);
+
+            // Handle escaped characters
+            if (current == '\\' && i < length) {
+                buffer.append(source.charAt(i++));
                 continue;
             }
-            if (str == -1) {
-                if (c == '"' || c == '\'') {
-                    str = c;
-                    continue;
-                }
 
-                if (delimiterChar == '\0') {
-                    if (SPACE_CHARS.indexOf(c) != -1) {
-                        if (stringBuilder.length() != 0) {
-                            list.add(stringBuilder.toString());
-                            stringBuilder.setLength(0);
-                        }
-                        continue;
-                    }
+            // Handle quoted strings
+            if (insideQuotes) {
+                if (current == quoteChar) {
+                    insideQuotes = false;
                 } else {
-                    if (c == delimiterChar) {
-                        if (stringBuilder.length() != 0) {
-                            list.add(stringBuilder.toString());
-                            stringBuilder.setLength(0);
-                        }
-                        continue;
-                    }
+                    buffer.append(current);
                 }
-            } else {
-                if (c == str) {
-                    str = -1;
-                    continue;
-                }
+                continue;
             }
-            stringBuilder.append(c);
-        }
-        if (stringBuilder.length() != 0) {
-            list.add(stringBuilder.toString());
+
+            if (current == '"' || current == '\'') {
+                insideQuotes = true;
+                quoteChar = current;
+                continue;
+            }
+
+            // Handle delimiters
+            boolean isDelimiter;
+            if (delimiterChar == '\0') {
+                isDelimiter = SPACE_CHARS.indexOf(current) != -1;
+            } else {
+                isDelimiter = current == delimiterChar;
+            }
+
+            if (isDelimiter) {
+                if (buffer.length() > 0) {
+                    result.add(buffer.toString());
+                    buffer.setLength(0);
+                }
+                continue;
+            }
+
+            buffer.append(current);
         }
 
-        return list.toArray(new String[]{});
+        if (buffer.length() > 0) {
+            result.add(buffer.toString());
+        }
+
+        return result.toArray(new String[0]);
     }
 
     public static String[] split(String source, String delimiterChar) {
-        if (delimiterChar.length() != 1) {
+        if (delimiterChar == null || delimiterChar.length() != 1) {
             throw new ArgumentParseException("delimiter string must contain one character");
         }
+
         return split(source, delimiterChar.charAt(0));
     }
 }
+
