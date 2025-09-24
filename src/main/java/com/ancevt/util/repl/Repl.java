@@ -107,6 +107,18 @@ public class Repl {
         }
     }
 
+    public void start(InputStream inputStream) throws IOException {
+        start(inputStream, System.out);
+    }
+
+    public void start() {
+        try {
+            start(System.in, System.out);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void stop() {
         running = false;
     }
