@@ -46,6 +46,65 @@ repl.start(System.in, System.out);
 * Matches commands via `CommandSet`
 * Handles unknown input via `NoSuchCommandException`
 
+## 📦 Examples
+
+### 🔹 Basic Command with No Args
+```java
+commandSet.add("ping", (repl, args) -> {
+    repl.println("pong");
+});
+```
+
+### 🔹 Echo Command with Typed Args
+```java
+commandSet.add("echo", (repl, args) -> {
+    while (args.hasNext()) {
+        repl.print(args.next() + " ");
+    }
+    repl.println("");
+});
+```
+
+### 🔹 Command with Options (Key-Value)
+```java
+commandSet.add("greet", (repl, args) -> {
+    String name = args.get("--name", "stranger");
+    repl.println("Hello, " + name + "!");
+});
+
+// Example input:
+// greet --name Alice
+```
+
+### 🔹 Type-Safe Parsing
+```java
+commandSet.add("math", (repl, args) -> {
+    int a = args.get(Integer.class, "--a", 0);
+    int b = args.get(Integer.class, "--b", 0);
+    repl.println("Sum: " + (a + b));
+});
+
+// Example input:
+// math --a 10 --b 20
+```
+
+### 🔹 Formatted Help Listing
+```java
+commandSet.add("help", (repl, args) -> {
+    repl.println(commandSet.formattedCommandList());
+});
+```
+
+### 🔹 Exit Command
+```java
+commandSet.add("exit", (repl, args) -> {
+    repl.println("Goodbye!");
+    repl.stop();
+});
+```
+
+
+
 
 ---
 Contact me:
