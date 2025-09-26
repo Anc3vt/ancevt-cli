@@ -74,11 +74,7 @@ public class ReplFrameworkTest {
     @Test
     public void testCommandExecution() throws Exception {
         CommandRegistry registry = new CommandRegistry();
-        registry.register("ping", new CommandHandler() {
-            public void handle(ReplRunner repl, ArgumentParser args) {
-                repl.println("pong");
-            }
-        });
+        registry.register("ping", (repl, args) -> repl.println("pong"));
 
         ReplRunner repl = new ReplRunner(registry);
         ByteArrayInputStream in = new ByteArrayInputStream("ping\n".getBytes());
@@ -103,11 +99,7 @@ public class ReplFrameworkTest {
     @Test
     public void testExitCommandStopsRepl() throws IOException {
         CommandRegistry registry = new CommandRegistry();
-        registry.register("exit", new CommandHandler() {
-            public void handle(ReplRunner repl, ArgumentParser args) {
-                repl.stop();
-            }
-        });
+        registry.register("exit", (repl, args) -> repl.stop());
 
         ReplRunner repl = new ReplRunner(registry);
         ByteArrayInputStream in = new ByteArrayInputStream("exit\nping\n".getBytes());
@@ -143,9 +135,7 @@ public class ReplFrameworkTest {
     @Test
     public void testCommandRegistryFormattedList() {
         CommandRegistry registry = new CommandRegistry();
-        registry.register("hello", "prints hello", new CommandHandler() {
-            public void handle(ReplRunner repl, ArgumentParser args) {
-            }
+        registry.register("hello", "prints hello", (repl, args) -> {
         });
         String output = registry.formattedCommandList();
         assertTrue(output.contains("hello"));
@@ -155,13 +145,9 @@ public class ReplFrameworkTest {
     @Test
     public void testCommandRegistryPrefixFilter() {
         CommandRegistry registry = new CommandRegistry();
-        registry.register("start", "", new CommandHandler() {
-            public void handle(ReplRunner repl, ArgumentParser args) {
-            }
+        registry.register("start", "", (repl, args) -> {
         });
-        registry.register("stop", "", new CommandHandler() {
-            public void handle(ReplRunner repl, ArgumentParser args) {
-            }
+        registry.register("stop", "", (repl, args) -> {
         });
         String filtered = registry.formattedCommandList("sta");
         assertTrue(filtered.contains("start"));
