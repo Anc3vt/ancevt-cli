@@ -1,3 +1,21 @@
+/**
+ * Copyright (C) 2025 Ancevt.
+ * See the notice.md file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ancevt.repl;
 
 import com.ancevt.repl.argument.ArgumentParseException;
@@ -149,4 +167,42 @@ public class ReplFrameworkTest {
         assertTrue(filtered.contains("start"));
         assertFalse(filtered.contains("stop"));
     }
+
+    @Test
+    public void testKeyEqualsValueSyntax() {
+        ArgumentParser args = ArgumentParser.parse("--port=1234 --debug=true");
+        assertEquals(1234, (int) args.get(Integer.class, "--port"));
+        assertEquals(true, args.get(Boolean.class, "--debug"));
+    }
+
+    @Test
+    public void testKeyEqualsValueMixedSyntax() {
+        ArgumentParser args = ArgumentParser.parse("--host localhost --port=8080");
+        assertEquals("localhost", args.get(String.class, "--host"));
+        assertEquals(8080, (int) args.get(Integer.class, "--port"));
+    }
+
+    @Test
+    public void testKeyEqualsValueWithArrayAccess() {
+        ArgumentParser args = ArgumentParser.parse("--mode=fast --retries 5");
+        assertEquals("fast", args.get(new String[]{"--mode", "--m"}));
+        assertEquals(5, (int) args.get(Integer.class, new String[]{"--retries"}));
+    }
+
+    @Test
+    public void testContainsMethodWithEqualsSyntax() {
+        ArgumentParser args = ArgumentParser.parse("--config=config.json --force");
+        assertTrue(args.contains("--config"));
+        assertTrue(args.contains("--force"));
+        assertFalse(args.contains("--notfound"));
+    }
+
+    @Test
+    public void testGetUnknownKeyReturnsDefaultValue() {
+        ArgumentParser args = ArgumentParser.parse("--port=9000");
+        assertEquals("localhost", args.get(String.class, "--host", "localhost"));
+        assertEquals(9000, (int) args.get(Integer.class, "--port", 1234));
+        assertEquals(1234, (int) args.get(Integer.class, "--missing", 1234));
+    }
+
 }

@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.ancevt.repl.argument;
 
 import java.util.Iterator;
@@ -25,13 +26,9 @@ import static java.lang.String.format;
 public class ArgumentParser implements Iterable<String> {
 
     private final String source;
-
     private final String[] elements;
-
     private int index;
-
     private Throwable problem;
-
     private String lastContainsCheckedKey;
 
     public ArgumentParser(String source) {
@@ -54,11 +51,6 @@ public class ArgumentParser implements Iterable<String> {
         elements = args;
     }
 
-    @Override
-    public String toString() {
-        return source;
-    }
-
     private String collectSource(String[] args) {
         final StringBuilder stringBuilder = new StringBuilder();
         for (String a : args) {
@@ -78,13 +70,12 @@ public class ArgumentParser implements Iterable<String> {
     public boolean contains(String... keys) {
         for (final String e : elements) {
             for (final String k : keys) {
-                if (e.equals(k)) {
+                if (e.equals(k) || e.startsWith(k + "=")) {
                     lastContainsCheckedKey = k;
                     return true;
                 }
             }
         }
-
         return false;
     }
 
@@ -97,9 +88,7 @@ public class ArgumentParser implements Iterable<String> {
     }
 
     public void skip(int count) {
-        for (int i = 0; i < count; i++) {
-            next();
-        }
+        for (int i = 0; i < count; i++) next();
     }
 
     public String next() {
@@ -112,7 +101,6 @@ public class ArgumentParser implements Iterable<String> {
         }
 
         T result = get(type, index);
-
         if (result == null) {
             throw new ArgumentParseException(String.format("Args exception no such element at index %d, type: %s", index, type));
         }
@@ -157,7 +145,6 @@ public class ArgumentParser implements Iterable<String> {
 
     public <T> T get(Class<T> type, int index, T defaultValue) {
         if (index < 0 || index >= elements.length) return defaultValue;
-
         try {
             return convertToType(elements[index], type);
         } catch (Exception e) {
@@ -171,11 +158,17 @@ public class ArgumentParser implements Iterable<String> {
     }
 
     public <T> T get(Class<T> type, String key, T defaultValue) {
-        for (int i = 0; i < elements.length - 1; i++) {
-            final String currentArgs = elements[i];
+        for (int i = 0; i < elements.length; i++) {
+            final String currentArg = elements[i];
 
-            if (currentArgs.equals(key)) {
-                return convertToType(elements[i + 1], type);
+            if (currentArg.equals(key)) {
+                if (i + 1 < elements.length) {
+                    return convertToType(elements[i + 1], type);
+                }
+            }
+
+            if (currentArg.startsWith(key + "=")) {
+                return convertToType(currentArg.substring((key + "=").length()), type);
             }
         }
 
@@ -184,11 +177,17 @@ public class ArgumentParser implements Iterable<String> {
 
     public <T> T get(Class<T> type, String[] keys, T defaultValue) {
         for (final String key : keys) {
-            for (int i = 0; i < elements.length - 1; i++) {
-                final String currentArgs = elements[i];
+            for (int i = 0; i < elements.length; i++) {
+                final String currentArg = elements[i];
 
-                if (currentArgs.equals(key)) {
-                    return convertToType(elements[i + 1], type);
+                if (currentArg.equals(key)) {
+                    if (i + 1 < elements.length) {
+                        return convertToType(elements[i + 1], type);
+                    }
+                }
+
+                if (currentArg.startsWith(key + "=")) {
+                    return convertToType(currentArg.substring((key + "=").length()), type);
                 }
             }
         }
@@ -221,11 +220,10 @@ public class ArgumentParser implements Iterable<String> {
     }
 
     private <T> T convertToType(String element, Class<T> type) {
-
         if (type == String.class) {
             return (T) element;
         } else if (type == boolean.class || type == Boolean.class) {
-            return (T) (element.equalsIgnoreCase("true") ? Boolean.TRUE : Boolean.FALSE);
+            return (T) Boolean.valueOf(element.equalsIgnoreCase("true"));
         } else if (type == int.class || type == Integer.class) {
             return (T) Integer.valueOf(element);
         } else if (type == long.class || type == Long.class) {
