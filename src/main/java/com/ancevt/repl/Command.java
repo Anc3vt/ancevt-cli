@@ -21,6 +21,7 @@ package com.ancevt.repl;
 import com.ancevt.repl.argument.Arguments;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -191,4 +192,68 @@ public class Command<T> {
     public void setAsync(boolean async) {
         isAsync = async;
     }
+
+    public static <T> Builder<T> builder(String commandWord) {
+        return new Builder<>(commandWord);
+    }
+
+    public static <T> Builder<T> builder(List<String> commandWords) {
+        return new Builder<>(commandWords);
+    }
+
+    public static <T> Builder<T> builder(String... commandWords) {
+        if (commandWords.length == 1) {
+            return new Builder<>(commandWords[0]);
+        } else {
+            return new Builder<>(Arrays.asList(commandWords));
+        }
+    }
+
+    public static class Builder<T> {
+        private final List<String> commandWords = new ArrayList<>();
+        private String description = "";
+        private BiFunction<ReplRunner, Arguments, T> action;
+        private BiConsumer<ReplRunner, T> resultAction;
+        private boolean async = false;
+
+        public Builder(String... words) {
+            this.commandWords.addAll(Arrays.asList(words));
+        }
+
+        public Builder(List<String> words) {
+            this.commandWords.addAll(words);
+        }
+
+        public Builder<T> description(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public Builder<T> action(BiFunction<ReplRunner, Arguments, T> action) {
+            this.action = action;
+            return this;
+        }
+
+        public Builder<T> result(BiConsumer<ReplRunner, T> resultAction) {
+            this.resultAction = resultAction;
+            return this;
+        }
+
+        public Builder<T> async() {
+            this.async = true;
+            return this;
+        }
+
+        public Command<T> build() {
+            Command<T> command = new Command<>(commandWords, description, action, resultAction);
+            command.setAsync(async);
+            return command;
+        }
+
+        public void register(CommandRegistry registry) {
+            registry.register(build());
+        }
+    }
+
+
 }

@@ -5,6 +5,7 @@ A lightweight and extensible REPL (Read-Eval-Print Loop) framework for building 
 ## Features
 
 * Command registration with single or multiple aliases
+* Fluent Builder API for commands
 * Typed argument parsing (supports `int`, `boolean`, `double`, `String`, etc.)
 * Support for quoted and escaped arguments
 * Asynchronous command execution support
@@ -17,38 +18,49 @@ A lightweight and extensible REPL (Read-Eval-Print Loop) framework for building 
 ## Getting Started
 
 ```java
-import java.util.List;
-
 public class Main {
     public static void main(String[] args) {
         ReplRunner repl = new ReplRunner();
 
         repl.getRegistry()
             // Register synchronous command
-            .register("hello", "Prints a greeting", (r, a) -> {
-                r.println("Hello from the REPL!");
-                return 0;
-            })
+            .command("hello")
+                .description("Prints a greeting")
+                .action((r, a) -> {
+                    r.println("Hello from the REPL!");
+                    return 0;
+                });
 
+        repl.getRegistry()
             // Register command with typed arguments
-            .register("add", "Adds two numbers", (r, a) -> {
-                int x = a.next(int.class);
-                int y = a.next(int.class);
-                r.println("Sum: " + (x + y));
-                return 0;
-            })
+            .command("add")
+                .description("Adds two numbers")
+                .action((r, a) -> {
+                    int x = a.next(int.class);
+                    int y = a.next(int.class);
+                    r.println("Sum: " + (x + y));
+                    return 0;
+                });
 
+        repl.getRegistry()
             // Register async command
-            .registerAsync("wait", "Simulates async delay", (r, a) -> {
-                Thread.sleep(1000);
-                return "Finished waiting";
-            }, (r, result) -> r.println(result))
+            .command("wait")
+                .description("Simulates async delay")
+                .async()
+                .action((r, a) -> {
+                    Thread.sleep(1000);
+                    return "Finished waiting";
+                })
+                .result((r, result) -> r.println(result));
 
+        repl.getRegistry()
             // Register multi-alias exit command
-            .register(List.of("exit", "e", "/q"), "Stops the REPL", (r, a) -> {
-                r.stop();
-                return 0;
-            });
+            .command("exit", "e", "/q")
+                .description("Stops the REPL")
+                .action((r, a) -> {
+                    r.stop();
+                    return 0;
+                });
 
         repl.start();
     }
@@ -62,27 +74,27 @@ public class Main {
 ### Basic
 
 ```java
-ArgumentParser parser = ArgumentParser.parse("--port 8080 --debug true");
+Arguments args = Arguments.parse("--port 8080 --debug true");
 
-int port = parser.get(int.class, "--port");
-boolean debug = parser.get(boolean.class, "--debug");
+int port = args.get(int.class, "--port");
+boolean debug = args.get(boolean.class, "--debug");
 ```
 
 ### With Quoted Values
 
 ```java
-ArgumentParser parser = ArgumentParser.parse("send \"Hello world\" user42");
+Arguments args = Arguments.parse("send \"Hello world\" user42");
 
-String message = parser.next();  // Hello world
-String user = parser.next();     // user42
+String message = args.next();  // Hello world
+String user = args.next();     // user42
 ```
 
 ### Key-Value Syntax
 
 ```java
-ArgumentParser parser = ArgumentParser.parse("--mode=fast --retries=3");
-String mode = parser.get("--mode");
-int retries = parser.get(int.class, "--retries");
+Arguments args = Arguments.parse("--mode=fast --retries=3");
+String mode = args.get("--mode");
+int retries = args.get(int.class, "--retries");
 ```
 
 ---
@@ -94,7 +106,7 @@ int retries = parser.get(int.class, "--retries");
 | `ReplRunner`              | Main REPL engine that controls execution      |
 | `CommandRegistry`         | Manages command registration                  |
 | `Command`                 | Represents a single command                   |
-| `ArgumentParser`          | Parses and converts user input into arguments |
+| `Arguments`               | Parses and converts user input into arguments |
 | `ArgumentParseException`  | Thrown for invalid or missing arguments       |
 | `UnknownCommandException` | Thrown for unrecognized commands              |
 
@@ -105,11 +117,13 @@ int retries = parser.get(int.class, "--retries");
 ### Echo Command
 
 ```java
-repl.getRegistry().register("echo", "Echoes input", (r, a) -> {
-    while (a.hasNext()) r.print(a.next() + " ");
-    r.println();
-    return 0;
-});
+repl.getRegistry().command("echo")
+    .description("Echoes input")
+    .action((r, a) -> {
+        while (a.hasNext()) r.print(a.next() + " ");
+        r.println();
+        return 0;
+    });
 ```
 
 **Usage:**
@@ -129,12 +143,14 @@ Hello REPL Framework
 ### Flag Parsing
 
 ```java
-repl.getRegistry().register("config", "Parses flags", (r, a) -> {
-    if (a.contains("--debug")) r.println("Debug mode enabled");
-    String mode = a.get("--mode", "default");
-    r.println("Mode: " + mode);
-    return 0;
-});
+repl.getRegistry().command("config")
+    .description("Parses flags")
+    .action((r, a) -> {
+        if (a.contains("--debug")) r.println("Debug mode enabled");
+        String mode = a.get("--mode", "default");
+        r.println("Mode: " + mode);
+        return 0;
+    });
 ```
 
 **Usage:**
@@ -155,10 +171,12 @@ Mode: production
 ### Multiple Aliases
 
 ```java
-repl.getRegistry().register(List.of("quit", "exit", "/q"), "Stops the REPL", (r, a) -> {
-    r.stop();
-    return 0;
-});
+repl.getRegistry().command("quit", "exit", "/q")
+    .description("Stops the REPL")
+    .action((r, a) -> {
+        r.stop();
+        return 0;
+    });
 ```
 
 ---
@@ -166,12 +184,14 @@ repl.getRegistry().register(List.of("quit", "exit", "/q"), "Stops the REPL", (r,
 ### Argument Type Conversion
 
 ```java
-repl.getRegistry().register("multiply", "Multiplies two integers", (r, a) -> {
-    int x = a.next(int.class);
-    int y = a.next(int.class);
-    r.println("Result: " + (x * y));
-    return 0;
-});
+repl.getRegistry().command("multiply")
+    .description("Multiplies two integers")
+    .action((r, a) -> {
+        int x = a.next(int.class);
+        int y = a.next(int.class);
+        r.println("Result: " + (x * y));
+        return 0;
+    });
 ```
 
 ---
@@ -179,11 +199,13 @@ repl.getRegistry().register("multiply", "Multiplies two integers", (r, a) -> {
 ### Help Command with Prefix
 
 ```java
-repl.getRegistry().register("help", "Shows all or filtered commands", (r, a) -> {
-    String prefix = a.hasNext() ? a.next() : "";
-    r.println(r.getRegistry().formattedCommandList(prefix));
-    return 0;
-});
+repl.getRegistry().command("help")
+    .description("Shows all or filtered commands")
+    .action((r, a) -> {
+        String prefix = a.hasNext() ? a.next() : "";
+        r.println(r.getRegistry().formattedCommandList(prefix));
+        return 0;
+    });
 ```
 
 **Usage:**
@@ -199,10 +221,15 @@ help mu
 
 ```java
 repl.setExecutor(executor);
-repl.getRegistry().registerAsync("compute", "Performs async computation", (r, a) -> {
-    Thread.sleep(500);
-    return 42;
-}, (r, result) -> r.println("Computed: " + result));
+
+repl.getRegistry().command("compute")
+    .description("Performs async computation")
+    .async()
+    .action((r, a) -> {
+        Thread.sleep(500);
+        return 42;
+    })
+    .result((r, result) -> r.println("Computed: " + result));
 ```
 
 ---

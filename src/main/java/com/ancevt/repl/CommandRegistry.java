@@ -30,6 +30,26 @@ public class CommandRegistry {
 
     private final Set<Command<?>> commands = new LinkedHashSet<>();
 
+    public <R> Command.Builder<R> command(List<String> words) {
+        return Command.builder(words);
+    }
+
+    public <T> Command.Builder<T> command(String... words) {
+        return new Command.Builder<T>(words) {
+            @Override
+            public Command<T> build() {
+                Command<T> cmd = super.build();
+                CommandRegistry.this.register(cmd); // сразу регистрируем
+                return cmd;
+            }
+        };
+    }
+
+    public CommandRegistry register(Command<?> command) {
+        commands.add(command);
+        return this;
+    }
+
     public <R> CommandRegistry register(List<String> commandWords, BiFunction<ReplRunner, Arguments, R> action) {
         Command<R> command = new Command<>(commandWords, action);
         commands.add(command);
