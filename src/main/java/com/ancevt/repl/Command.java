@@ -18,7 +18,7 @@
 package com.ancevt.repl;
 
 
-import com.ancevt.repl.argument.ArgumentParser;
+import com.ancevt.repl.argument.Arguments;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,13 +32,13 @@ public class Command<T> {
     private final List<String> commandWords;
     private final String description;
 
-    private final BiFunction<ReplRunner, ArgumentParser, T> action;
+    private final BiFunction<ReplRunner, Arguments, T> action;
 
     private BiConsumer<ReplRunner, T> resultAction;
 
     private boolean isAsync;
 
-    public Command(List<String> commandWords, String description, BiFunction<ReplRunner, ArgumentParser, T> action) {
+    public Command(List<String> commandWords, String description, BiFunction<ReplRunner, Arguments, T> action) {
         if (commandWords.isEmpty()) {
             throw new IllegalArgumentException("commandWords must not be empty");
         } else {
@@ -48,7 +48,7 @@ public class Command<T> {
         }
     }
 
-    public Command(List<String> commandWords, BiFunction<ReplRunner, ArgumentParser, T> action) {
+    public Command(List<String> commandWords, BiFunction<ReplRunner, Arguments, T> action) {
         if (commandWords.isEmpty()) {
             throw new IllegalArgumentException("commandWords must not be empty");
         } else {
@@ -58,7 +58,7 @@ public class Command<T> {
         }
     }
 
-    public Command(String commandWord, BiFunction<ReplRunner, ArgumentParser, T> action) {
+    public Command(String commandWord, BiFunction<ReplRunner, Arguments, T> action) {
         this.commandWords = new ArrayList<>();
         this.description = "";
         this.action = action;
@@ -66,7 +66,7 @@ public class Command<T> {
         commandWords.add(commandWord);
     }
 
-    public Command(String commandWord, String description, BiFunction<ReplRunner, ArgumentParser, T> action) {
+    public Command(String commandWord, String description, BiFunction<ReplRunner, Arguments, T> action) {
         this.commandWords = new ArrayList<>();
         this.description = description;
         this.action = action;
@@ -74,7 +74,7 @@ public class Command<T> {
         commandWords.add(commandWord);
     }
 
-    public Command(List<String> commandWords, String description, BiFunction<ReplRunner, ArgumentParser, T> action, BiConsumer<ReplRunner, T> resultAction) {
+    public Command(List<String> commandWords, String description, BiFunction<ReplRunner, Arguments, T> action, BiConsumer<ReplRunner, T> resultAction) {
         this.resultAction = resultAction;
         if (commandWords.isEmpty()) {
             throw new IllegalArgumentException("commandWords must not be empty");
@@ -85,7 +85,7 @@ public class Command<T> {
         }
     }
 
-    public Command(List<String> commandWords, BiFunction<ReplRunner, ArgumentParser, T> action, BiConsumer<ReplRunner, T> resultAction) {
+    public Command(List<String> commandWords, BiFunction<ReplRunner, Arguments, T> action, BiConsumer<ReplRunner, T> resultAction) {
         this.resultAction = resultAction;
         if (commandWords.isEmpty()) {
             throw new IllegalArgumentException("commandWords must not be empty");
@@ -96,7 +96,7 @@ public class Command<T> {
         }
     }
 
-    public Command(String commandWord, BiFunction<ReplRunner, ArgumentParser, T> action, BiConsumer<ReplRunner, T> resultAction) {
+    public Command(String commandWord, BiFunction<ReplRunner, Arguments, T> action, BiConsumer<ReplRunner, T> resultAction) {
         this.resultAction = resultAction;
         this.commandWords = new ArrayList<>();
         this.description = "";
@@ -105,7 +105,7 @@ public class Command<T> {
         commandWords.add(commandWord);
     }
 
-    public Command(String commandWord, String description, BiFunction<ReplRunner, ArgumentParser, T> action, BiConsumer<ReplRunner, T> resultAction) {
+    public Command(String commandWord, String description, BiFunction<ReplRunner, Arguments, T> action, BiConsumer<ReplRunner, T> resultAction) {
         this.resultAction = resultAction;
         this.commandWords = new ArrayList<>();
         this.description = description;
@@ -114,7 +114,7 @@ public class Command<T> {
         commandWords.add(commandWord);
     }
 
-    public BiFunction<ReplRunner, ArgumentParser, T> getAction() {
+    public BiFunction<ReplRunner, Arguments, T> getAction() {
         return action;
     }
 
@@ -127,18 +127,18 @@ public class Command<T> {
     }
 
     public void execute(ReplRunner replRunner, String commandLine) {
-        ArgumentParser argumentParser = ArgumentParser.parse(commandLine);
-        argumentParser.skip();
-        T result = action.apply(replRunner, argumentParser);
+        Arguments arguments = Arguments.parse(commandLine);
+        arguments.skip();
+        T result = action.apply(replRunner, arguments);
         if (resultAction != null) resultAction.accept(replRunner, result);
     }
 
     public void executeAsync(ReplRunner replRunner, String commandLine) {
         Runnable task = () -> {
             try {
-                ArgumentParser argumentParser = ArgumentParser.parse(commandLine);
-                argumentParser.skip();
-                T result = action.apply(replRunner, argumentParser);
+                Arguments arguments = Arguments.parse(commandLine);
+                arguments.skip();
+                T result = action.apply(replRunner, arguments);
 
                 if (result != null) {
                     if (resultAction != null) {

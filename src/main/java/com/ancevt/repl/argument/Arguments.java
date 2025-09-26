@@ -23,7 +23,7 @@ import java.util.function.Consumer;
 
 import static java.lang.String.format;
 
-public class ArgumentParser implements Iterable<String> {
+public class Arguments implements Iterable<String> {
 
     private final String source;
     private final String[] elements;
@@ -31,22 +31,22 @@ public class ArgumentParser implements Iterable<String> {
     private Throwable problem;
     private String lastContainsCheckedKey;
 
-    public ArgumentParser(String source) {
+    public Arguments(String source) {
         this.source = source;
         elements = ArgumentSplitHelper.split(source, '\0');
     }
 
-    public ArgumentParser(String source, String delimiterChar) {
+    public Arguments(String source, String delimiterChar) {
         this.source = source;
         elements = ArgumentSplitHelper.split(source, delimiterChar);
     }
 
-    public ArgumentParser(String source, char delimiterChar) {
+    public Arguments(String source, char delimiterChar) {
         this.source = source;
         elements = ArgumentSplitHelper.split(source, delimiterChar);
     }
 
-    public ArgumentParser(String[] args) {
+    public Arguments(String[] args) {
         this.source = collectSource(args);
         elements = args;
     }
@@ -257,20 +257,20 @@ public class ArgumentParser implements Iterable<String> {
         return problem;
     }
 
-    public static ArgumentParser parse(String source) {
-        return new ArgumentParser(source);
+    public static Arguments parse(String source) {
+        return new Arguments(source);
     }
 
-    public static ArgumentParser parse(String[] args) {
-        return new ArgumentParser(args);
+    public static Arguments parse(String[] args) {
+        return new Arguments(args);
     }
 
-    public static ArgumentParser parse(String source, String delimiterChar) {
-        return new ArgumentParser(source, delimiterChar);
+    public static Arguments parse(String source, String delimiterChar) {
+        return new Arguments(source, delimiterChar);
     }
 
-    public static ArgumentParser parse(String source, char delimiterChar) {
-        return new ArgumentParser(source, delimiterChar);
+    public static Arguments parse(String source, char delimiterChar) {
+        return new Arguments(source, delimiterChar);
     }
 
     @Override

@@ -19,7 +19,7 @@
 package com.ancevt.repl;
 
 import com.ancevt.repl.argument.ArgumentParseException;
-import com.ancevt.repl.argument.ArgumentParser;
+import com.ancevt.repl.argument.Arguments;
 import com.ancevt.repl.argument.ArgumentSplitHelper;
 import org.junit.jupiter.api.Test;
 
@@ -33,7 +33,7 @@ public class ReplFrameworkTest {
 
     @Test
     public void testParsedArgumentsBasicParsing() {
-        ArgumentParser args = ArgumentParser.parse("one two three");
+        Arguments args = Arguments.parse("one two three");
         assertEquals(3, args.size());
         assertEquals("one", args.next());
         assertEquals("two", args.next());
@@ -42,7 +42,7 @@ public class ReplFrameworkTest {
 
     @Test
     public void testParsedArgumentsQuotedParsing() {
-        ArgumentParser args = ArgumentParser.parse("\"hello world\" test");
+        Arguments args = Arguments.parse("\"hello world\" test");
         assertEquals(2, args.size());
         assertEquals("hello world", args.next());
         assertEquals("test", args.next());
@@ -50,21 +50,21 @@ public class ReplFrameworkTest {
 
     @Test
     public void testParsedArgumentsEscapeHandling() {
-        ArgumentParser args = ArgumentParser.parse("line\\ break end");
+        Arguments args = Arguments.parse("line\\ break end");
         assertEquals("line break", args.next());
         assertEquals("end", args.next());
     }
 
     @Test
     public void testParsedArgumentsGetByKey() {
-        ArgumentParser args = ArgumentParser.parse("--port 8080 --debug true");
+        Arguments args = Arguments.parse("--port 8080 --debug true");
         assertEquals(Integer.valueOf(8080), args.get(Integer.class, "--port"));
         assertEquals(Boolean.TRUE, args.get(Boolean.class, "--debug"));
     }
 
     @Test
     public void testParsedArgumentsIndexManagement() {
-        ArgumentParser args = ArgumentParser.parse("a b c");
+        Arguments args = Arguments.parse("a b c");
         args.skip(); // skip "a"
         assertEquals("b", args.next());
         args.setIndex(0);
@@ -159,28 +159,28 @@ public class ReplFrameworkTest {
 
     @Test
     public void testKeyEqualsValueSyntax() {
-        ArgumentParser args = ArgumentParser.parse("--port=1234 --debug=true");
+        Arguments args = Arguments.parse("--port=1234 --debug=true");
         assertEquals(1234, (int) args.get(Integer.class, "--port"));
         assertEquals(true, args.get(Boolean.class, "--debug"));
     }
 
     @Test
     public void testKeyEqualsValueMixedSyntax() {
-        ArgumentParser args = ArgumentParser.parse("--host localhost --port=8080");
+        Arguments args = Arguments.parse("--host localhost --port=8080");
         assertEquals("localhost", args.get(String.class, "--host"));
         assertEquals(8080, (int) args.get(Integer.class, "--port"));
     }
 
     @Test
     public void testKeyEqualsValueWithArrayAccess() {
-        ArgumentParser args = ArgumentParser.parse("--mode=fast --retries 5");
+        Arguments args = Arguments.parse("--mode=fast --retries 5");
         assertEquals("fast", args.get(new String[]{"--mode", "--m"}));
         assertEquals(5, (int) args.get(Integer.class, new String[]{"--retries"}));
     }
 
     @Test
     public void testContainsMethodWithEqualsSyntax() {
-        ArgumentParser args = ArgumentParser.parse("--config=config.json --force");
+        Arguments args = Arguments.parse("--config=config.json --force");
         assertTrue(args.contains("--config"));
         assertTrue(args.contains("--force"));
         assertFalse(args.contains("--notfound"));
@@ -188,7 +188,7 @@ public class ReplFrameworkTest {
 
     @Test
     public void testGetUnknownKeyReturnsDefaultValue() {
-        ArgumentParser args = ArgumentParser.parse("--port=9000");
+        Arguments args = Arguments.parse("--port=9000");
         assertEquals("localhost", args.get(String.class, "--host", "localhost"));
         assertEquals(9000, (int) args.get(Integer.class, "--port", 1234));
         assertEquals(1234, (int) args.get(Integer.class, "--missing", 1234));
