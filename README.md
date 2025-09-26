@@ -6,8 +6,10 @@ A lightweight and extensible REPL (Read-Eval-Print Loop) framework for building 
 
 * Command registration with single or multiple aliases
 * Typed argument parsing (supports `int`, `boolean`, `double`, `String`, etc.)
-* Quoted and escaped arguments supported
-* Control REPL lifecycle: start, stop, and execute
+* Support for quoted and escaped arguments
+* Asynchronous command execution support
+* Result handlers for commands (sync and async)
+* REPL lifecycle control: start, stop, and execute
 * Minimal setup, easy integration into any Java application
 
 ---
@@ -18,25 +20,35 @@ A lightweight and extensible REPL (Read-Eval-Print Loop) framework for building 
 import java.util.List;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         ReplRunner repl = new ReplRunner();
 
         repl.getRegistry()
-                
-                // Register command #1    
-                .register("hello", "Prints a greeting", (r, a) -> {
-                    r.println("Hello from the REPL!");
-                })
-                
-                // Register command #2    
-                .register("add", "Adds two numbers", (r, a) -> {
-                    int a1 = a.next(int.class);
-                    int a2 = a.next(int.class);
-                    r.println("Sum: " + (a1 + a2));
-                })
-                
-                // Register command #3    
-                .register(List.of("exit", "e"), "Stops the REPL", (r, a) -> r.stop());
+            // Register synchronous command
+            .register("hello", "Prints a greeting", (r, a) -> {
+                r.println("Hello from the REPL!");
+                return 0;
+            })
+
+            // Register command with typed arguments
+            .register("add", "Adds two numbers", (r, a) -> {
+                int x = a.next(int.class);
+                int y = a.next(int.class);
+                r.println("Sum: " + (x + y));
+                return 0;
+            })
+
+            // Register async command
+            .registerAsync("wait", "Simulates async delay", (r, a) -> {
+                Thread.sleep(1000);
+                return "Finished waiting";
+            }, (r, result) -> r.println(result))
+
+            // Register multi-alias exit command
+            .register(List.of("exit", "e", "/q"), "Stops the REPL", (r, a) -> {
+                r.stop();
+                return 0;
+            });
 
         repl.start();
     }
@@ -45,7 +57,9 @@ public class Main {
 
 ---
 
-## Argument Parsing Example
+## Argument Parsing Examples
+
+### Basic
 
 ```java
 ArgumentParser parser = ArgumentParser.parse("--port 8080 --debug true");
@@ -54,7 +68,7 @@ int port = parser.get(int.class, "--port");
 boolean debug = parser.get(boolean.class, "--debug");
 ```
 
-### With quoted values:
+### With Quoted Values
 
 ```java
 ArgumentParser parser = ArgumentParser.parse("send \"Hello world\" user42");
@@ -63,67 +77,70 @@ String message = parser.next();  // Hello world
 String user = parser.next();     // user42
 ```
 
----
-
-## Core Components
-
-* `ReplRunner` — The main REPL engine
-* `CommandRegistry` — Stores and manages registered commands
-* `Command` — Represents a single REPL command
-* `CommandHandler` — Functional interface for command handlers
-* `ArgumentParser` — Parses raw input into typed arguments
-* `ArgumentParseException` — Exception thrown on parsing errors
-* `UnknownCommandException` — Exception for unrecognized commands
-
----
-
-# REPL Framework Examples
-
-Here are some additional usage examples demonstrating how to integrate and extend the REPL framework.
-
----
-
-## Example 1: Echo Command
+### Key-Value Syntax
 
 ```java
-repl.getRegistry().register("echo", "Echoes back the input", (r, a) -> {
-    while (a.hasNext()) {
-        r.print(a.next() + " ");
-    }
-    r.println("");
+ArgumentParser parser = ArgumentParser.parse("--mode=fast --retries=3");
+String mode = parser.get("--mode");
+int retries = parser.get(int.class, "--retries");
+```
+
+---
+
+## Built-In Components
+
+| Component                 | Description                                   |
+| ------------------------- | --------------------------------------------- |
+| `ReplRunner`              | Main REPL engine that controls execution      |
+| `CommandRegistry`         | Manages command registration                  |
+| `Command`                 | Represents a single command                   |
+| `ArgumentParser`          | Parses and converts user input into arguments |
+| `ArgumentParseException`  | Thrown for invalid or missing arguments       |
+| `UnknownCommandException` | Thrown for unrecognized commands              |
+
+---
+
+## Command Examples
+
+### Echo Command
+
+```java
+repl.getRegistry().register("echo", "Echoes input", (r, a) -> {
+    while (a.hasNext()) r.print(a.next() + " ");
+    r.println();
+    return 0;
 });
 ```
 
 **Usage:**
 
 ```
-echo Hello World from REPL
+echo Hello REPL Framework
 ```
 
 **Output:**
 
 ```
-Hello World from REPL
+Hello REPL Framework
 ```
 
 ---
 
-## Example 2: Flag Parsing
+### Flag Parsing
 
 ```java
 repl.getRegistry().register("config", "Parses flags", (r, a) -> {
-    if (a.contains("--debug")) {
-        r.println("Debug mode enabled");
-    }
+    if (a.contains("--debug")) r.println("Debug mode enabled");
     String mode = a.get("--mode", "default");
     r.println("Mode: " + mode);
+    return 0;
 });
 ```
 
 **Usage:**
 
 ```
-config --debug --mode production
+config --debug --mode=production
 ```
 
 **Output:**
@@ -135,50 +152,37 @@ Mode: production
 
 ---
 
-## Example 3: Using Multiple Aliases
+### Multiple Aliases
 
 ```java
-repl.getRegistry().register(Arrays.asList("quit", "exit", "/q"), "Terminates the REPL", (r, a) -> r.stop());
-```
-
-**Usage:**
-
-```
-exit
+repl.getRegistry().register(List.of("quit", "exit", "/q"), "Stops the REPL", (r, a) -> {
+    r.stop();
+    return 0;
+});
 ```
 
 ---
 
-## Example 4: Argument Type Conversion
+### Argument Type Conversion
 
 ```java
 repl.getRegistry().register("multiply", "Multiplies two integers", (r, a) -> {
     int x = a.next(int.class);
     int y = a.next(int.class);
     r.println("Result: " + (x * y));
+    return 0;
 });
-```
-
-**Usage:**
-
-```
-multiply 4 7
-```
-
-**Output:**
-
-```
-Result: 28
 ```
 
 ---
 
-## Example 5: Help Command with Prefix Filter
+### Help Command with Prefix
 
 ```java
 repl.getRegistry().register("help", "Shows all or filtered commands", (r, a) -> {
     String prefix = a.hasNext() ? a.next() : "";
     r.println(r.getRegistry().formattedCommandList(prefix));
+    return 0;
 });
 ```
 
@@ -189,23 +193,19 @@ help
 help mu
 ```
 
-**Output:**
+---
 
-```
-Available commands:
-  echo                 Echoes back the input
-  config               Parses flags
-  multiply             Multiplies two integers
-  quit                 Terminates the REPL
+## Async Command with Result Handler
 
-Available commands starting with 'mu':
-  multiply             Multiplies two integers
+```java
+repl.setExecutor(executor);
+repl.getRegistry().registerAsync("compute", "Performs async computation", (r, a) -> {
+    Thread.sleep(500);
+    return 42;
+}, (r, result) -> r.println("Computed: " + result));
 ```
 
 ---
-
-These examples cover basic, intermediate, and advanced usage. You can easily extend the framework with custom commands, argument parsing, and REPL behaviors.
-
 
 ## License
 

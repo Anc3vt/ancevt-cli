@@ -74,7 +74,10 @@ public class ReplFrameworkTest {
     @Test
     public void testCommandExecution() throws Exception {
         CommandRegistry registry = new CommandRegistry();
-        registry.register("ping", (repl, args) -> repl.println("pong"));
+        registry.register("ping", (repl, args) -> {
+            repl.println("pong");
+            return 0;
+        });
 
         ReplRunner repl = new ReplRunner(registry);
         ByteArrayInputStream in = new ByteArrayInputStream("ping\n".getBytes());
@@ -99,7 +102,10 @@ public class ReplFrameworkTest {
     @Test
     public void testExitCommandStopsRepl() throws IOException {
         CommandRegistry registry = new CommandRegistry();
-        registry.register("exit", (repl, args) -> repl.stop());
+        registry.register("exit", (repl, args) -> {
+            repl.stop();
+            return 0;
+        });
 
         ReplRunner repl = new ReplRunner(registry);
         ByteArrayInputStream in = new ByteArrayInputStream("exit\nping\n".getBytes());
@@ -135,8 +141,7 @@ public class ReplFrameworkTest {
     @Test
     public void testCommandRegistryFormattedList() {
         CommandRegistry registry = new CommandRegistry();
-        registry.register("hello", "prints hello", (repl, args) -> {
-        });
+        registry.register("hello", "prints hello", (repl, args) -> 0);
         String output = registry.formattedCommandList();
         assertTrue(output.contains("hello"));
         assertTrue(output.contains("prints hello"));
@@ -145,10 +150,8 @@ public class ReplFrameworkTest {
     @Test
     public void testCommandRegistryPrefixFilter() {
         CommandRegistry registry = new CommandRegistry();
-        registry.register("start", "", (repl, args) -> {
-        });
-        registry.register("stop", "", (repl, args) -> {
-        });
+        registry.register("start", "", (repl, args) -> 0);
+        registry.register("stop", "", (repl, args) -> 0);
         String filtered = registry.formattedCommandList("sta");
         assertTrue(filtered.contains("start"));
         assertFalse(filtered.contains("stop"));

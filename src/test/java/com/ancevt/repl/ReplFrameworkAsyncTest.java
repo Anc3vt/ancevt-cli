@@ -1,0 +1,126 @@
+package com.ancevt.repl;
+
+import org.junit.jupiter.api.Test;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class ReplFrameworkAsyncTest {
+    @Test
+    public void testAsyncCommandExecution() throws Exception {
+        CountDownLatch latch = new CountDownLatch(1);
+        ByteArrayOutputStream realOut = new ByteArrayOutputStream();
+
+        OutputStream wrappedOut = new OutputStream() {
+            @Override
+            public void write(int b) {
+                realOut.write(b);
+                if (b == '\n') latch.countDown();
+            }
+
+            @Override
+            public void write(byte[] b, int off, int len) throws IOException {
+                realOut.write(b, off, len);
+                if (new String(b, off, len).contains("done")) {
+                    latch.countDown();
+                }
+            }
+
+            @Override
+            public String toString() {
+                return realOut.toString();
+            }
+        };
+
+        Command<String> command = new Command<>(
+                "async",
+                (repl, args) -> "done\n"
+        );
+        command.setAsync(true);
+
+        ReplRunner repl = new ReplRunner();
+        repl.setOutputStream(wrappedOut);
+
+        command.executeAsync(repl, "async");
+
+        assertTrue(latch.await(500, TimeUnit.MILLISECONDS), "Output was not written in time");
+
+        String result = realOut.toString();
+        assertTrue(result.contains("done"));
+    }
+
+
+    @Test
+    public void testAsyncCommandWithResultAction() throws Exception {
+        CompletableFuture<String> resultFuture = new CompletableFuture<>();
+
+        Command<String> command = new Command<>(
+                "async",
+                (repl, args) -> "result from async",
+                (repl, result) -> resultFuture.complete(result)
+        );
+        command.setAsync(true);
+
+        ReplRunner repl = new ReplRunner();
+        command.executeAsync(repl, "async");
+
+        String result = resultFuture.get(500, TimeUnit.MILLISECONDS);
+        assertEquals("result from async", result);
+    }
+
+
+    @Test
+    public void testAsyncCommandHandlesException() throws Exception {
+        CountDownLatch latch = new CountDownLatch(1);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        OutputStream outputStream = new OutputStream() {
+            @Override
+            public void write(int b) {
+                out.write(b);
+                if (b == '\n') latch.countDown();
+            }
+
+            @Override
+            public void write(byte[] b, int off, int len) throws IOException {
+                out.write(b, off, len);
+                if (new String(b, off, len).contains("boom")) {
+                    latch.countDown();
+                }
+            }
+
+            @Override
+            public String toString() {
+                return out.toString();
+            }
+        };
+
+        Command<String> command = new Command<>(
+                "failasync",
+                (repl, args) -> {
+                    throw new RuntimeException("boom!");
+                }
+        );
+        command.setAsync(true);
+
+        ReplRunner repl = new ReplRunner();
+        repl.setOutputStream(outputStream);
+
+        command.executeAsync(repl, "failasync");
+
+        assertTrue(latch.await(500, TimeUnit.MILLISECONDS), "Exception output not captured in time");
+
+        String result = out.toString();
+        assertTrue(result.contains("Async exception"));
+        assertTrue(result.contains("boom"));
+    }
+
+
+}

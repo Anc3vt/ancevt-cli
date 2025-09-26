@@ -18,41 +18,126 @@
 
 package com.ancevt.repl;
 
+import com.ancevt.repl.argument.ArgumentParser;
+
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 
 public class CommandRegistry {
 
-    private final Set<Command> commands = new LinkedHashSet<>();
+    private final Set<Command<?>> commands = new LinkedHashSet<>();
 
-    public CommandRegistry register(List<String> commandWords, CommandHandler action) {
-        Command command = new Command(commandWords, action);
+    public <R> CommandRegistry register(List<String> commandWords, BiFunction<ReplRunner, ArgumentParser, R> action) {
+        Command<R> command = new Command<>(commandWords, action);
         commands.add(command);
         return this;
     }
 
-    public CommandRegistry register(List<String> commandWords, String description, CommandHandler action) {
-        Command command = new Command(commandWords, description, action);
+    public <R> CommandRegistry register(List<String> commandWords, String description, BiFunction<ReplRunner, ArgumentParser, R> action) {
+        Command<R> command = new Command<>(commandWords, description, action);
         commands.add(command);
         return this;
     }
 
-    public CommandRegistry register(String commandWord, CommandHandler action) {
-        Command command = new Command(commandWord, action);
+    public <R> CommandRegistry register(String commandWord, BiFunction<ReplRunner, ArgumentParser, R> action) {
+        Command<R> command = new Command<>(commandWord, action);
         commands.add(command);
         return this;
     }
 
-    public CommandRegistry register(String commandWord, String description, CommandHandler action) {
-        Command command = new Command(commandWord, description, action);
+    public <R> CommandRegistry register(String commandWord, String description, BiFunction<ReplRunner, ArgumentParser, R> action) {
+        Command<R> command = new Command<>(commandWord, description, action);
         commands.add(command);
         return this;
     }
+
+    public <R> CommandRegistry register(List<String> commandWords, BiFunction<ReplRunner, ArgumentParser, R> action, BiConsumer<ReplRunner, R> resultAction) {
+        Command<R> command = new Command<>(commandWords, action, resultAction);
+        commands.add(command);
+        return this;
+    }
+
+    public <R> CommandRegistry register(List<String> commandWords, String description, BiFunction<ReplRunner, ArgumentParser, R> action, BiConsumer<ReplRunner, R> resultAction) {
+        Command<R> command = new Command<>(commandWords, description, action, resultAction);
+        commands.add(command);
+        return this;
+    }
+
+    public <R> CommandRegistry register(String commandWord, BiFunction<ReplRunner, ArgumentParser, R> action, BiConsumer<ReplRunner, R> resultAction) {
+        Command<R> command = new Command<>(commandWord, action, resultAction);
+        commands.add(command);
+        return this;
+    }
+
+    public <R> CommandRegistry register(String commandWord, String description, BiFunction<ReplRunner, ArgumentParser, R> action, BiConsumer<ReplRunner, R> resultAction) {
+        Command<R> command = new Command<>(commandWord, description, action, resultAction);
+        commands.add(command);
+        return this;
+    }
+
+    public <R> CommandRegistry registerAsync(String commandWord, BiFunction<ReplRunner, ArgumentParser, R> action) {
+        Command<R> command = new Command<>(commandWord, action);
+        command.setAsync(true);
+        commands.add(command);
+        return this;
+    }
+
+    public <R> CommandRegistry registerAsync(String commandWord, String description, BiFunction<ReplRunner, ArgumentParser, R> action) {
+        Command<R> command = new Command<>(commandWord, description, action);
+        command.setAsync(true);
+        commands.add(command);
+        return this;
+    }
+
+    public <R> CommandRegistry registerAsync(String commandWord, BiFunction<ReplRunner, ArgumentParser, R> action, BiConsumer<ReplRunner, R> resultAction) {
+        Command<R> command = new Command<>(commandWord, action, resultAction);
+        command.setAsync(true);
+        commands.add(command);
+        return this;
+    }
+
+    public <R> CommandRegistry registerAsync(String commandWord, String description, BiFunction<ReplRunner, ArgumentParser, R> action, BiConsumer<ReplRunner, R> resultAction) {
+        Command<R> command = new Command<>(commandWord, description, action, resultAction);
+        command.setAsync(true);
+        commands.add(command);
+        return this;
+    }
+
+    public <R> CommandRegistry registerAsync(List<String> commandWords, BiFunction<ReplRunner, ArgumentParser, R> action) {
+        Command<R> command = new Command<>(commandWords, action);
+        command.setAsync(true);
+        commands.add(command);
+        return this;
+    }
+
+    public <R> CommandRegistry registerAsync(List<String> commandWords, String description, BiFunction<ReplRunner, ArgumentParser, R> action) {
+        Command<R> command = new Command<>(commandWords, description, action);
+        command.setAsync(true);
+        commands.add(command);
+        return this;
+    }
+
+    public <R> CommandRegistry registerAsync(List<String> commandWords, BiFunction<ReplRunner, ArgumentParser, R> action, BiConsumer<ReplRunner, R> resultAction) {
+        Command<R> command = new Command<>(commandWords, action, resultAction);
+        command.setAsync(true);
+        commands.add(command);
+        return this;
+    }
+
+    public <R> CommandRegistry registerAsync(List<String> commandWords, String description, BiFunction<ReplRunner, ArgumentParser, R> action, BiConsumer<ReplRunner, R> resultAction) {
+        Command<R> command = new Command<>(commandWords, description, action, resultAction);
+        command.setAsync(true);
+        commands.add(command);
+        return this;
+    }
+
 
     public String formattedCommandList() {
         StringBuilder sb = new StringBuilder("Available commands:\n");
-        for (Command command : commands) {
+        for (Command<?> command : commands) {
             String word = command.getCommandWord();
             String desc = command.getDescription();
             sb.append(String.format("  %-20s %s\n", word, desc.isEmpty() ? "" : desc));
@@ -70,7 +155,7 @@ public class CommandRegistry {
 
         boolean anyFound = false;
 
-        for (Command command : commands) {
+        for (Command<?> command : commands) {
             String word = command.getCommandWord();
             if (prefix == null || prefix.isEmpty() || word.startsWith(prefix)) {
                 String desc = command.getDescription();
@@ -86,7 +171,7 @@ public class CommandRegistry {
         return sb.toString();
     }
 
-    public Set<Command> getCommands() {
+    public Set<Command<?>> getCommands() {
         return commands;
     }
 }

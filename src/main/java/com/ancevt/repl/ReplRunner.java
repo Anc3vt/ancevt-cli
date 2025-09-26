@@ -22,6 +22,7 @@ package com.ancevt.repl;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.concurrent.Executor;
 
 import static java.lang.String.format;
 
@@ -33,6 +34,8 @@ public class ReplRunner {
     private InputStream inputStream;
 
     private OutputStream outputStream;
+
+    private Executor executor;
 
     public ReplRunner() {
         this.registry = new CommandRegistry();
@@ -90,11 +93,15 @@ public class ReplRunner {
 
         String commandWord = tokens[0];
 
-        for (Command command : registry.getCommands()) {
+        for (Command<?> command : registry.getCommands()) {
             if (commandWord.equals(command.getCommandWord()) ||
                     command.getCommandWords().stream().anyMatch(s -> s.equals(commandWord))) {
 
-                command.execute(this, commandLine);
+                if (command.isAsync()) {
+                    command.executeAsync(this, commandLine);
+                } else {
+                    command.execute(this, commandLine);
+                }
                 return;
             }
         }
@@ -150,14 +157,26 @@ public class ReplRunner {
             for (int i = 0; i < a.size(); i++) {
                 r.println(i + "\t" + a.getElements()[i]);
             }
+            return 0;
         });
 
         registry.register("help", "Shows help info", (r, a) -> {
             r.println(r.getRegistry().formattedCommandList());
+            return 0;
         });
 
-        registry.register(Arrays.asList("exit", "/q"), "Exit the REPL", (r, a) -> r.stop());
+        registry.register(Arrays.asList("exit", "/q"), "Exit the REPL", (r, a) -> {
+            r.stop();
+            return 0;
+        });
 
     }
 
+    public Executor getExecutor() {
+        return executor;
+    }
+
+    public void setExecutor(Executor executor) {
+        this.executor = executor;
+    }
 }

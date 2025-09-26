@@ -22,15 +22,23 @@ import com.ancevt.repl.argument.ArgumentParser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 
-public class Command {
+public class Command<T> {
 
     private final List<String> commandWords;
     private final String description;
 
-    private final CommandHandler action;
+    private final BiFunction<ReplRunner, ArgumentParser, T> action;
 
-    public Command(List<String> commandWords, String description, CommandHandler action) {
+    private BiConsumer<ReplRunner, T> resultAction;
+
+    private boolean isAsync;
+
+    public Command(List<String> commandWords, String description, BiFunction<ReplRunner, ArgumentParser, T> action) {
         if (commandWords.isEmpty()) {
             throw new IllegalArgumentException("commandWords must not be empty");
         } else {
@@ -40,7 +48,7 @@ public class Command {
         }
     }
 
-    public Command(List<String> commandWords, CommandHandler action) {
+    public Command(List<String> commandWords, BiFunction<ReplRunner, ArgumentParser, T> action) {
         if (commandWords.isEmpty()) {
             throw new IllegalArgumentException("commandWords must not be empty");
         } else {
@@ -50,7 +58,7 @@ public class Command {
         }
     }
 
-    public Command(String commandWord, CommandHandler action) {
+    public Command(String commandWord, BiFunction<ReplRunner, ArgumentParser, T> action) {
         this.commandWords = new ArrayList<>();
         this.description = "";
         this.action = action;
@@ -58,7 +66,7 @@ public class Command {
         commandWords.add(commandWord);
     }
 
-    public Command(String commandWord, String description, CommandHandler action) {
+    public Command(String commandWord, String description, BiFunction<ReplRunner, ArgumentParser, T> action) {
         this.commandWords = new ArrayList<>();
         this.description = description;
         this.action = action;
@@ -66,15 +74,94 @@ public class Command {
         commandWords.add(commandWord);
     }
 
-    public CommandHandler getAction() {
+    public Command(List<String> commandWords, String description, BiFunction<ReplRunner, ArgumentParser, T> action, BiConsumer<ReplRunner, T> resultAction) {
+        this.resultAction = resultAction;
+        if (commandWords.isEmpty()) {
+            throw new IllegalArgumentException("commandWords must not be empty");
+        } else {
+            this.commandWords = commandWords;
+            this.description = description;
+            this.action = action;
+        }
+    }
+
+    public Command(List<String> commandWords, BiFunction<ReplRunner, ArgumentParser, T> action, BiConsumer<ReplRunner, T> resultAction) {
+        this.resultAction = resultAction;
+        if (commandWords.isEmpty()) {
+            throw new IllegalArgumentException("commandWords must not be empty");
+        } else {
+            this.commandWords = commandWords;
+            this.description = "";
+            this.action = action;
+        }
+    }
+
+    public Command(String commandWord, BiFunction<ReplRunner, ArgumentParser, T> action, BiConsumer<ReplRunner, T> resultAction) {
+        this.resultAction = resultAction;
+        this.commandWords = new ArrayList<>();
+        this.description = "";
+        this.action = action;
+
+        commandWords.add(commandWord);
+    }
+
+    public Command(String commandWord, String description, BiFunction<ReplRunner, ArgumentParser, T> action, BiConsumer<ReplRunner, T> resultAction) {
+        this.resultAction = resultAction;
+        this.commandWords = new ArrayList<>();
+        this.description = description;
+        this.action = action;
+
+        commandWords.add(commandWord);
+    }
+
+    public BiFunction<ReplRunner, ArgumentParser, T> getAction() {
         return action;
+    }
+
+    public void setResultAction(BiConsumer<ReplRunner, T> resultAction) {
+        this.resultAction = resultAction;
+    }
+
+    public BiConsumer<ReplRunner, T> getResultAction() {
+        return resultAction;
     }
 
     public void execute(ReplRunner replRunner, String commandLine) {
         ArgumentParser argumentParser = ArgumentParser.parse(commandLine);
         argumentParser.skip();
-        action.handle(replRunner, argumentParser);
+        T result = action.apply(replRunner, argumentParser);
+        if (resultAction != null) resultAction.accept(replRunner, result);
     }
+
+    public void executeAsync(ReplRunner replRunner, String commandLine) {
+        Runnable task = () -> {
+            try {
+                ArgumentParser argumentParser = ArgumentParser.parse(commandLine);
+                argumentParser.skip();
+                T result = action.apply(replRunner, argumentParser);
+
+                if (result != null) {
+                    if (resultAction != null) {
+                        resultAction.accept(replRunner, result);
+                    } else {
+                        replRunner.println(String.valueOf(result));
+                    }
+                }
+
+            } catch (Exception e) {
+                replRunner.println("Async exception: " + e.getMessage());
+            }
+        };
+
+        Executor executor = replRunner.getExecutor();
+
+        if (executor != null) {
+            CompletableFuture.runAsync(task, executor);
+        } else {
+            CompletableFuture.runAsync(task); // fallback: commonPool
+        }
+    }
+
 
     public String getDescription() {
         return description;
@@ -95,5 +182,13 @@ public class Command {
                 ", description='" + description + '\'' +
                 ", action=" + action +
                 '}';
+    }
+
+    public boolean isAsync() {
+        return isAsync;
+    }
+
+    public void setAsync(boolean async) {
+        isAsync = async;
     }
 }
