@@ -15,38 +15,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ancevt.repl;
+package com.ancevt.cli.argument;
 
-public class UnknownCommandException extends Exception {
+public class ArgumentParseException extends RuntimeException {
 
-    private String commandWord;
-    private String commandLine;
-    private CommandRegistry registry;
-
-    public UnknownCommandException(String message, String commandWord, String commandLine, CommandRegistry registry) {
-        super(message);
-        this.commandWord = commandWord;
-        this.commandLine = commandLine;
-        this.registry = registry;
+    public ArgumentParseException() {
     }
 
-    public UnknownCommandException(String message) {
+    public ArgumentParseException(String message) {
         super(message);
     }
 
-    public UnknownCommandException(String message, Throwable cause) {
+    public ArgumentParseException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public CommandRegistry getRegistry() {
-        return registry;
+    public ArgumentParseException(Throwable cause) {
+        super(cause);
     }
 
-    public String getCommandWord() {
-        return commandWord;
-    }
-
-    public String getCommandLine() {
-        return commandLine;
+    public ArgumentParseException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
     }
 }

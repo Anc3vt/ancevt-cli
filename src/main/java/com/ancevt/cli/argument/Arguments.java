@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.ancevt.repl.argument;
+package com.ancevt.cli.argument;
 
 import java.util.Iterator;
 import java.util.function.Consumer;

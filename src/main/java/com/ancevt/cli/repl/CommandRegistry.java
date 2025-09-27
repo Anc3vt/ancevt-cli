@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-package com.ancevt.repl;
+package com.ancevt.cli.repl;
 
-import com.ancevt.repl.argument.Arguments;
+import com.ancevt.cli.argument.Arguments;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -44,6 +44,40 @@ public class CommandRegistry {
             }
         };
     }
+
+    // Register by instance(s)
+    public CommandRegistry register(Object instance) {
+        AnnotationCommandLoader.load(this, instance);
+        return this;
+    }
+
+    public CommandRegistry register(List<Object> instances) {
+        AnnotationCommandLoader.load(this, instances);
+        return this;
+    }
+
+    public CommandRegistry register(Object... instances) {
+        AnnotationCommandLoader.load(this, instances);
+        return this;
+    }
+
+    // Register by class(es)
+    public CommandRegistry register(Class<?> clazz) {
+        AnnotationCommandLoader.load(this, clazz);
+        return this;
+    }
+
+    public CommandRegistry registerClass(List<Class<?>> classes) {
+        AnnotationCommandLoader.loadClass(this, classes);
+        return this;
+    }
+
+    public CommandRegistry registerClass(Class<?>... classes) {
+        AnnotationCommandLoader.loadClass(this, classes);
+        return this;
+    }
+
+
 
     public CommandRegistry register(Command<?> command) {
         commands.add(command);

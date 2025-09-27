@@ -1,5 +1,7 @@
-package com.ancevt.repl;
+package com.ancevt.cli;
 
+import com.ancevt.cli.repl.Command;
+import com.ancevt.cli.repl.ReplRunner;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
