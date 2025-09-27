@@ -4,12 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.ancevt.util</groupId>
-    <artifactId>repl</artifactId>
+    <groupId>com.ancevt.cli</groupId>
+    <artifactId>ancevt-cli</artifactId>
     <version>1,0.0</version>
 
-    <name>REPL</name>
-    <url>https://githib.com/Anc3vt/repl.git</url>
+    <name>CLI tools</name>
+    <url>https://githib.com/Anc3vt/ancevt-cli.git</url>
 
     <developers>
         <developer>
