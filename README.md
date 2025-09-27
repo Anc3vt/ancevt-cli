@@ -24,18 +24,6 @@ This library is suitable for embedding in developer tools, admin shells, scripti
 
 ## 🚀 Quick Start
 
-### 1. Add dependency
-
-```xml
-<dependency>
-  <groupId>com.ancevt</groupId>
-  <artifactId>ancevt-cli</artifactId>
-  <version>1.0.0</version>
-</dependency>
-```
-
-### 2. Define a command
-
 #### Programmatic registration
 
 ```java
