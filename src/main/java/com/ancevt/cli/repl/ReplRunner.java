@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 
 import static java.lang.String.format;
@@ -259,7 +260,22 @@ public class ReplRunner {
                 .withColorizer()
                 .withDefaultCommands()
                 .withOutput(System.out)
+                .withExecutor(Executors.newCachedThreadPool())
                 .withRegistry(new CommandRegistry())
+                .build();
+
+
+        repl.getRegistry().command("compute")
+                .action((r, a) -> {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return 42;
+                })
+                .result((r, result) -> r.println("Answer: " + result))
+                .async()
                 .build();
 
 
