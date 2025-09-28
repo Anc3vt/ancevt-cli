@@ -169,10 +169,22 @@ public class ReplRunner {
         running = false;
     }
 
+    public Executor getExecutor() {
+        return executor;
+    }
+
+    public void setExecutor(Executor executor) {
+        this.executor = executor;
+    }
+
+    public static ReplRunnerBuilder builder() {
+        return new ReplRunnerBuilder();
+    }
+
 
     // Some dev sandbox
     public static void main(String[] args) throws IOException {
-        ReplRunner repl = new ReplRunnerBuilder()
+        ReplRunner repl = ReplRunner.builder()
                 .withColorizer()
                 .withRegistry(new CommandRegistry())
                 .withOutput(System.out)
@@ -211,11 +223,4 @@ public class ReplRunner {
     }
 
 
-    public Executor getExecutor() {
-        return executor;
-    }
-
-    public void setExecutor(Executor executor) {
-        this.executor = executor;
-    }
 }
