@@ -1,6 +1,6 @@
-# Ancevt CLI Framework
+# Ancevt CLI Library
 
-A lightweight but powerful Java framework for building **CLI tools** and **REPL (Read-Eval-Print Loop) applications**. It combines simple **argument parsing**, a **flexible command registry**, and a built-in **interactive shell**, giving you a production-ready CLI in just a few lines.
+A lightweight but powerful Java library for building **CLI tools** and **REPL (Read-Eval-Print Loop) applications**. It combines simple **argument parsing**, a **flexible command registry**, and a built-in **interactive shell**, giving you a production-ready CLI in just a few lines.
 
 This library is perfect for developer tools, admin consoles, embedded CLIs, or even educational projects where you want to experiment with command interpreters.
 

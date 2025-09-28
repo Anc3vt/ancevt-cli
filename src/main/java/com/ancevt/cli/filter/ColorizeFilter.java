@@ -23,10 +23,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Colorizer: заменяет теги вида <red>, <green>, <bold>, <reset> на ANSI-коды.
- * Можно использовать короткие алиасы для базовых цветов: <r>, <g>, <y>, <b>, <c>, <w>.
- */
 public final class ColorizeFilter {
 
     private static final String RESET = "\u001B[0m";

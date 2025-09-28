@@ -8,8 +8,8 @@
     <artifactId>ancevt-cli</artifactId>
     <version>1.0.0</version>
 
-    <name>Ancevt CLI</name>
-    <description>Lightweight CLI/REPL framework for Java applications</description>
+    <name>Ancevt CLI Library</name>
+    <description>Lightweight CLI/REPL library for Java applications</description>
     <url>https://github.com/Anc3vt/ancevt-cli</url>
 
     <developers>

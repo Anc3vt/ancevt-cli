@@ -31,7 +31,7 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ReplFrameworkTest {
+public class ReplTest {
 
     @Test
     public void testParsedArgumentsBasicParsing() {

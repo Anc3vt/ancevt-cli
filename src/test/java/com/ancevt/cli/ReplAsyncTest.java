@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ReplFrameworkAsyncTest {
+public class ReplAsyncTest {
     @Test
     public void testAsyncCommandExecution() throws Exception {
         CountDownLatch latch = new CountDownLatch(1);

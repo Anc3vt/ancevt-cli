@@ -42,21 +42,47 @@ public class Arguments implements Iterable<String> {
     private Throwable problem;
     private String lastContainsCheckedKey;
 
+    /**
+     * Creates a new {@code Arguments} instance by parsing the given source string.
+     * Splits the string by spaces.
+     *
+     * @param source the raw argument string
+     */
     public Arguments(String source) {
         this.source = source;
         elements = ArgumentSplitHelper.split(source, '\0');
     }
 
+    /**
+     * Creates a new {@code Arguments} instance by parsing the given source string
+     * using a custom delimiter represented as a {@code String}.
+     *
+     * @param source        the raw argument string
+     * @param delimiterChar the delimiter string used to split arguments
+     */
     public Arguments(String source, String delimiterChar) {
         this.source = source;
         elements = ArgumentSplitHelper.split(source, delimiterChar);
     }
 
+    /**
+     * Creates a new {@code Arguments} instance by parsing the given source string
+     * using a custom delimiter represented as a {@code char}.
+     *
+     * @param source        the raw argument string
+     * @param delimiterChar the delimiter character used to split arguments
+     */
     public Arguments(String source, char delimiterChar) {
         this.source = source;
         elements = ArgumentSplitHelper.split(source, delimiterChar);
     }
 
+    /**
+     * Creates a new {@code Arguments} instance from an array of argument strings.
+     * The original array is preserved, and a formatted source string is built for reference.
+     *
+     * @param args the array of argument strings
+     */
     public Arguments(String[] args) {
         this.source = collectSource(args);
         elements = args;
