@@ -4,6 +4,16 @@ A lightweight but powerful Java framework for building **CLI tools** and **REPL 
 
 This library is perfect for developer tools, admin consoles, embedded CLIs, or even educational projects where you want to experiment with command interpreters.
 
+> **Note on terminology:**  
+> This project uses the term **REPL (Read–Eval–Print Loop)** in the **shell-style sense**:  
+> each line of input is read, matched against registered commands, executed,  
+> and the result is printed back to the user.
+>
+> It does **not** try to be a general-purpose language interpreter like Python or JavaScript REPLs.  
+> Instead, it’s closer to tools such as `bash`, `redis-cli`, or `psql` —  
+> interactive command environments built around a registry of commands.
+
+
 ---
 
 ## 🚨 Why not just Picocli or JLine?
