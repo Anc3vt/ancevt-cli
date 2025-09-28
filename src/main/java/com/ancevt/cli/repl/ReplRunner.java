@@ -145,11 +145,11 @@ public class ReplRunner {
         ReplRunner repl = new ReplRunner();
         CommandRegistry registry = repl.getRegistry();
 
-        registerDefaultCommands(registry, repl);
+        registerDefaultCommands(registry);
         repl.start(System.in, System.out);
     }
 
-    private static void registerDefaultCommands(CommandRegistry registry, ReplRunner repl) {
+    private static void registerDefaultCommands(CommandRegistry registry) {
         registry.command("test")
                 .description("Prints each argument with index")
                 .action((r, a) -> {
@@ -157,7 +157,6 @@ public class ReplRunner {
                     for (int i = 0; i < a.size(); i++) {
                         r.println(i + "\t" + a.getElements()[i]);
                     }
-                    return 0;
                 })
                 .build();
 
@@ -165,7 +164,6 @@ public class ReplRunner {
                 .description("Shows help info")
                 .action((r, a) -> {
                     r.println(r.getRegistry().formattedCommandList());
-                    return 0;
                 })
                 .build();
 
@@ -173,7 +171,6 @@ public class ReplRunner {
                 .description("Exit the REPL")
                 .action((r, a) -> {
                     r.stop();
-                    return 0;
                 })
                 .build();
     }

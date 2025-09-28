@@ -1,21 +1,3 @@
-/**
- * Copyright (C) 2025 Ancevt.
- * See the notice.md file distributed with this work for additional
- * information regarding copyright ownership.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.ancevt.cli;
 
 import com.ancevt.cli.argument.ArgumentParseException;
@@ -76,10 +58,13 @@ public class ReplFrameworkTest {
     @Test
     public void testCommandExecution() throws Exception {
         CommandRegistry registry = new CommandRegistry();
-        registry.register("ping", (repl, args) -> {
-            repl.println("pong");
-            return 0;
-        });
+        registry.command("ping")
+                .description("simple ping command")
+                .action((repl, args) -> {
+                    repl.println("pong");
+                    return 0;
+                })
+                .build();
 
         ReplRunner repl = new ReplRunner(registry);
         ByteArrayInputStream in = new ByteArrayInputStream("ping\n".getBytes());
@@ -104,10 +89,12 @@ public class ReplFrameworkTest {
     @Test
     public void testExitCommandStopsRepl() throws IOException {
         CommandRegistry registry = new CommandRegistry();
-        registry.register("exit", (repl, args) -> {
-            repl.stop();
-            return 0;
-        });
+        registry.command("exit")
+                .description("stop repl")
+                .action((repl, args) -> {
+                    repl.stop();
+                })
+                .build();
 
         ReplRunner repl = new ReplRunner(registry);
         ByteArrayInputStream in = new ByteArrayInputStream("exit\nping\n".getBytes());
@@ -143,7 +130,13 @@ public class ReplFrameworkTest {
     @Test
     public void testCommandRegistryFormattedList() {
         CommandRegistry registry = new CommandRegistry();
-        registry.register("hello", "prints hello", (repl, args) -> 0);
+        registry.command("hello")
+                .description("prints hello")
+                .action((repl, args) -> {
+                    repl.println("hello");
+                })
+                .build();
+
         String output = registry.formattedCommandList();
         assertTrue(output.contains("hello"));
         assertTrue(output.contains("prints hello"));
@@ -152,8 +145,9 @@ public class ReplFrameworkTest {
     @Test
     public void testCommandRegistryPrefixFilter() {
         CommandRegistry registry = new CommandRegistry();
-        registry.register("start", "", (repl, args) -> 0);
-        registry.register("stop", "", (repl, args) -> 0);
+        registry.command("start").action((r, a) -> {}).build();
+        registry.command("stop").action((r, a) -> {}).build();
+
         String filtered = registry.formattedCommandList("sta");
         assertTrue(filtered.contains("start"));
         assertFalse(filtered.contains("stop"));
@@ -195,5 +189,4 @@ public class ReplFrameworkTest {
         assertEquals(9000, (int) args.get(Integer.class, "--port", 1234));
         assertEquals(1234, (int) args.get(Integer.class, "--missing", 1234));
     }
-
 }

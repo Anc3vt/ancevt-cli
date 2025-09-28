@@ -234,6 +234,14 @@ public class Command<T> {
             return this;
         }
 
+        public Builder<T> action(BiConsumer<ReplRunner, Arguments> consumer) {
+            this.action = (r, a) -> {
+                consumer.accept(r, a);
+                return null;
+            };
+            return this;
+        }
+
         public Builder<T> result(BiConsumer<ReplRunner, T> resultAction) {
             this.resultAction = resultAction;
             return this;
