@@ -18,9 +18,15 @@
 package com.ancevt.cli.repl;
 
 
+import com.ancevt.cli.filter.ColorizeFilter;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.function.Function;
 
 import static java.lang.String.format;
 
@@ -34,6 +40,8 @@ public class ReplRunner {
     private OutputStream outputStream;
 
     private Executor executor;
+
+    private final List<Function<String, String>> outputFilters = new ArrayList<>();
 
     public ReplRunner() {
         this.registry = new CommandRegistry();
@@ -71,13 +79,37 @@ public class ReplRunner {
         return running;
     }
 
+    public void addOutputFilter(Function<String, String> filter) {
+        if (filter != null) outputFilters.add(filter);
+    }
+
+    public boolean removeOutputFilter(Function<String, String> filter) {
+        return outputFilters.remove(filter);
+    }
+
+    public List<Function<String, String>> getOutputFilters() {
+        return Collections.unmodifiableList(outputFilters);
+    }
+
+    public void clearOutputFilters() {
+        outputFilters.clear();
+    }
+
+    private String applyFilters(String text) {
+        String result = text;
+        for (Function<String, String> f : outputFilters) {
+            result = f.apply(result);
+        }
+        return result;
+    }
+
     public void print(Object s) {
-        if (s != null) {
-            try {
-                outputStream.write(String.valueOf(s).getBytes(StandardCharsets.UTF_8));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+        try {
+            String text = String.valueOf(s);
+            text = applyFilters(text);
+            outputStream.write(text.getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -143,13 +175,18 @@ public class ReplRunner {
     // Some dev sandbox
     public static void main(String[] args) throws IOException {
         ReplRunner repl = new ReplRunner();
+
+        repl.addOutputFilter(new ColorizeFilter()::colorize);
+
         CommandRegistry registry = repl.getRegistry();
+
 
         registerDefaultCommands(registry);
         repl.start(System.in, System.out);
     }
 
     private static void registerDefaultCommands(CommandRegistry registry) {
+
         registry.command("test")
                 .description("Prints each argument with index")
                 .action((r, a) -> {
@@ -163,7 +200,7 @@ public class ReplRunner {
         registry.command("help")
                 .description("Shows help info")
                 .action((r, a) -> {
-                    r.println(r.getRegistry().formattedCommandList());
+                    r.println("<g>" + r.getRegistry().formattedCommandList());
                 })
                 .build();
 

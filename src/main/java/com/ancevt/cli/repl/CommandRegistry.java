@@ -106,4 +106,6 @@ public class CommandRegistry {
     public Set<Command<?>> getCommands() {
         return commands;
     }
+
+
 }
