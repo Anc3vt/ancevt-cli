@@ -56,7 +56,7 @@ while (true) {
 ReplRunner repl = new ReplRunner();
 repl.getRegistry().command("ping")
     .description("Replies with pong")
-    .action((r, a) -> { r.println("pong"); return 0; })
+    .action((r, a) -> { r.println("pong"); })
     .build();
 
 repl.start();
