@@ -28,6 +28,18 @@ import java.util.function.Function;
 
 import static java.lang.String.format;
 
+/**
+ * Core REPL (Read-Eval-Print Loop) runner.
+ * Handles command execution, input/output streams, and lifecycle.
+ *
+ * Typical usage:
+ * <pre>
+ *     ReplRunner repl = ReplRunner.builder()
+ *         .withDefaultCommands()
+ *         .build();
+ *     repl.start(System.in, System.out);
+ * </pre>
+ */
 public class ReplRunner {
 
     private CommandRegistry registry;
@@ -49,46 +61,75 @@ public class ReplRunner {
         this.registry = registry;
     }
 
+    /**
+     * @return input stream used by this REPL
+     */
     public InputStream getInputStream() {
         return inputStream;
     }
 
+    /**
+     * Sets the input stream for reading user commands.
+     */
     public void setInputStream(InputStream inputStream) {
         this.inputStream = inputStream;
     }
 
+    /**
+     * @return output stream used by this REPL
+     */
     public OutputStream getOutputStream() {
         return outputStream;
     }
 
+    /**
+     * Sets the output stream for printing results and errors.
+     */
     public void setOutputStream(OutputStream outputStream) {
         this.outputStream = outputStream;
     }
 
+    /**
+     * @return current command registry
+     */
     public CommandRegistry getRegistry() {
         return registry;
     }
 
+    /**
+     * Sets a new command registry.
+     */
     public void setRegistry(CommandRegistry commandRegistry) {
         this.registry = commandRegistry;
     }
 
+    /**
+     * @return true if REPL loop is running
+     */
     public boolean isRunning() {
         return running;
     }
-
+    /**
+     * Adds a filter that transforms REPL output before it is written.
+     *
+     * @param filter transformation function, e.g. for colorization
+     */
     public void addOutputFilter(Function<String, String> filter) {
         if (filter != null) outputFilters.add(filter);
     }
-
+    /**
+     * Removes a previously added output filter.
+     *
+     * @return true if the filter was present and removed
+     */
     public boolean removeOutputFilter(Function<String, String> filter) {
         return outputFilters.remove(filter);
     }
-
+    /** @return an unmodifiable list of active output filters */
     public List<Function<String, String>> getOutputFilters() {
         return Collections.unmodifiableList(outputFilters);
     }
-
+    /** Removes all output filters. */
     public void clearOutputFilters() {
         outputFilters.clear();
     }
@@ -100,7 +141,10 @@ public class ReplRunner {
         }
         return result;
     }
-
+    /**
+     * Prints text to the output stream without appending a newline.
+     * Output filters are applied before writing.
+     */
     public void print(Object s) {
         try {
             String text = String.valueOf(s);
@@ -110,11 +154,19 @@ public class ReplRunner {
             throw new RuntimeException(e);
         }
     }
-
+    /**
+     * Prints text to the output stream followed by a newline.
+     * Output filters are applied before writing.
+     */
     public void println(Object s) {
         print(s + "\n");
     }
-
+    /**
+     * Executes a single command line string.
+     *
+     * @param commandLine full input line
+     * @throws UnknownCommandException if no matching command is found
+     */
     public void execute(String commandLine) throws UnknownCommandException {
         String[] tokens = commandLine.trim().split("\\s+");
         if (tokens.length == 0) return;
@@ -136,7 +188,10 @@ public class ReplRunner {
 
         throw new UnknownCommandException(format("Unknown command: %s", commandWord), commandWord, commandLine, registry);
     }
-
+    /**
+     * Starts the REPL loop using the given input and output streams.
+     * Blocks until stopped or input ends.
+     */
     public void start(InputStream inputStream, OutputStream outputStream) throws IOException {
         this.inputStream = inputStream;
         this.outputStream = outputStream;
@@ -152,11 +207,14 @@ public class ReplRunner {
             }
         }
     }
-
+    /**
+     * Starts the REPL loop with a given input stream
+     * and {@link System#out} as output.
+     */
     public void start(InputStream inputStream) throws IOException {
         start(inputStream, System.out);
     }
-
+    /** Starts the REPL loop using {@link System#in} and {@link System#out}. */
     public void start() {
         try {
             start(System.in, System.out);
@@ -164,19 +222,21 @@ public class ReplRunner {
             throw new RuntimeException(e);
         }
     }
-
+    /** Stops the REPL loop. */
     public void stop() {
         running = false;
     }
-
+    /** @return executor used for async command execution */
     public Executor getExecutor() {
         return executor;
     }
-
+    /** Sets the executor for async command execution. */
     public void setExecutor(Executor executor) {
         this.executor = executor;
     }
-
+    /**
+     * Creates a builder for configuring and constructing {@link ReplRunner}.
+     */
     public static ReplRunnerBuilder builder() {
         return new ReplRunnerBuilder();
     }

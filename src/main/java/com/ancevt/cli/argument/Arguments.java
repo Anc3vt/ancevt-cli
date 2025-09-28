@@ -23,6 +23,17 @@ import java.util.function.Consumer;
 
 import static java.lang.String.format;
 
+/**
+ * Utility class for parsing and handling command line arguments.
+ * Supports both space-separated and key=value style arguments.
+ *
+ * Example:
+ * <pre>
+ *     Arguments args = Arguments.parse("--port=8080 --debug true");
+ *     int port = args.get(Integer.class, "--port");
+ *     boolean debug = args.get(Boolean.class, "--debug");
+ * </pre>
+ */
 public class Arguments implements Iterable<String> {
 
     private final String source;
@@ -63,10 +74,20 @@ public class Arguments implements Iterable<String> {
         return stringBuilder.toString();
     }
 
+    /**
+     * Returns all parsed elements.
+     *
+     * @return array of argument elements
+     */
     public String[] getElements() {
         return elements;
     }
 
+    /**
+     * Returns all parsed elements.
+     *
+     * @return array of argument elements
+     */
     public boolean contains(String... keys) {
         for (final String e : elements) {
             for (final String k : keys) {
@@ -79,22 +100,48 @@ public class Arguments implements Iterable<String> {
         return false;
     }
 
+    /**
+     * Checks if there are more arguments available for iteration.
+     *
+     * @return true if there are remaining arguments
+     */
     public boolean hasNext() {
         return index < elements.length;
     }
 
+    /**
+     * Skips the next argument.
+     */
     public void skip() {
         next();
     }
 
+    /**
+     * Skips the given number of arguments.
+     *
+     * @param count number of arguments to skip
+     */
     public void skip(int count) {
         for (int i = 0; i < count; i++) next();
     }
 
+    /**
+     * Returns the next argument as a String.
+     *
+     * @return the next argument
+     */
     public String next() {
         return next(String.class);
     }
 
+    /**
+     * Returns the next argument converted to the given type.
+     *
+     * @param type target type
+     * @param <T>  type parameter
+     * @return argument converted to type
+     * @throws ArgumentParseException if no more elements or conversion fails
+     */
     public <T> T next(Class<T> type) {
         if (index >= elements.length) {
             throw new ArgumentParseException(format("next: Index out of bounds, index: %d, elements: %d", index, elements.length));
@@ -109,6 +156,14 @@ public class Arguments implements Iterable<String> {
         return result;
     }
 
+    /**
+     * Returns the next argument converted to the given type, or a default if unavailable.
+     *
+     * @param type         target type
+     * @param defaultValue fallback value
+     * @param <T>          type parameter
+     * @return argument converted to type or defaultValue
+     */
     public <T> T next(Class<T> type, T defaultValue) {
         if (index >= elements.length) {
             throw new ArgumentParseException(format("next: Index out of bounds, index: %d, elements: %d", index, elements.length));
@@ -119,10 +174,21 @@ public class Arguments implements Iterable<String> {
         return result;
     }
 
+    /**
+     * Returns the current index in the arguments array.
+     *
+     * @return index
+     */
     public int getIndex() {
         return index;
     }
 
+    /**
+     * Sets the current index.
+     *
+     * @param index new index
+     * @throws ArgumentParseException if out of bounds
+     */
     public void setIndex(int index) {
         if (index >= elements.length) {
             throw new ArgumentParseException(format("Index out of bounds, index: %d, elements: %d", index, elements.length));
@@ -131,18 +197,43 @@ public class Arguments implements Iterable<String> {
         this.index = index;
     }
 
+    /**
+     * Resets the index back to 0.
+     */
     public void resetIndex() {
         index = 0;
     }
 
+    /**
+     * Returns the number of parsed elements.
+     *
+     * @return element count
+     */
     public int size() {
         return elements.length;
     }
 
+    /**
+     * Gets the value for the last checked key, converted to the given type.
+     *
+     * @param type target type
+     * @param <T>  type parameter
+     * @return value converted to type or null
+     */
     public <T> T get(Class<T> type) {
         return get(type, lastContainsCheckedKey);
     }
 
+    /**
+     * Gets the argument at the given index as the specified type,
+     * or returns a default value if invalid or not found.
+     *
+     * @param type         target type
+     * @param index        index in array
+     * @param defaultValue fallback value
+     * @param <T>          type parameter
+     * @return converted argument or defaultValue
+     */
     public <T> T get(Class<T> type, int index, T defaultValue) {
         if (index < 0 || index >= elements.length) return defaultValue;
         try {
@@ -153,10 +244,28 @@ public class Arguments implements Iterable<String> {
         }
     }
 
+    /**
+     * Gets the argument at the given index as the specified type.
+     *
+     * @param type target type
+     * @param index index in array
+     * @param <T> type parameter
+     * @return converted argument or null
+     */
     public <T> T get(Class<T> type, int index) {
         return get(type, index, null);
     }
 
+    /**
+     * Gets the value associated with the given key.
+     * Supports both "--key value" and "--key=value" styles.
+     *
+     * @param type target type
+     * @param key argument key
+     * @param defaultValue fallback value
+     * @param <T> type parameter
+     * @return converted argument or defaultValue
+     */
     public <T> T get(Class<T> type, String key, T defaultValue) {
         for (int i = 0; i < elements.length; i++) {
             final String currentArg = elements[i];
@@ -175,6 +284,15 @@ public class Arguments implements Iterable<String> {
         return defaultValue;
     }
 
+    /**
+     * Gets the value for any of the given keys.
+     *
+     * @param type target type
+     * @param keys possible keys
+     * @param defaultValue fallback value
+     * @param <T> type parameter
+     * @return converted argument or defaultValue
+     */
     public <T> T get(Class<T> type, String[] keys, T defaultValue) {
         for (final String key : keys) {
             for (int i = 0; i < elements.length; i++) {
@@ -195,26 +313,68 @@ public class Arguments implements Iterable<String> {
         return defaultValue;
     }
 
+    /**
+     * Gets the value for the given key.
+     *
+     * @param type target type
+     * @param key argument key
+     * @param <T> type parameter
+     * @return converted argument or null
+     */
     public <T> T get(Class<T> type, String key) {
         return get(type, key, null);
     }
 
+    /**
+     * Gets the value for any of the given keys.
+     *
+     * @param type target type
+     * @param keys possible keys
+     * @param <T> type parameter
+     * @return converted argument or null
+     */
     public <T> T get(Class<T> type, String[] keys) {
         return get(type, keys, null);
     }
 
+    /**
+     * Gets a String value for the given key or a default.
+     *
+     * @param key argument key
+     * @param defaultValue fallback value
+     * @return argument value or defaultValue
+     */
     public String get(String key, String defaultValue) {
         return get(String.class, key, defaultValue);
     }
 
+    /**
+     * Gets a String value for any of the given keys or a default.
+     *
+     * @param keys possible keys
+     * @param defaultValue fallback value
+     * @return argument value or defaultValue
+     */
     public String get(String[] keys, String defaultValue) {
         return get(String.class, keys, defaultValue);
     }
 
+    /**
+     * Gets a String value for the given key.
+     *
+     * @param key argument key
+     * @return argument value or null
+     */
     public String get(String key) {
         return get(String.class, key);
     }
 
+    /**
+     * Gets a String value for any of the given keys.
+     *
+     * @param keys possible keys
+     * @return argument value or null
+     */
     public String get(String[] keys) {
         return get(String.class, keys);
     }
@@ -241,38 +401,89 @@ public class Arguments implements Iterable<String> {
         }
     }
 
+    /**
+     * Returns the original source string of the arguments.
+     *
+     * @return original command line
+     */
     public String getSource() {
         return source;
     }
 
+    /**
+     * Checks if there are no arguments.
+     *
+     * @return true if empty
+     */
     public boolean isEmpty() {
         return elements == null || elements.length == 0;
     }
 
+    /**
+     * Checks if there was a problem during type conversion.
+     *
+     * @return true if a problem occurred
+     */
     public boolean hasProblem() {
         return problem != null;
     }
 
+    /**
+     * Returns the last exception that occurred during conversion.
+     *
+     * @return Throwable or null
+     */
     public Throwable getProblem() {
         return problem;
     }
 
+    /**
+     * Creates an Arguments instance from a string.
+     *
+     * @param source command line string
+     * @return Arguments instance
+     */
     public static Arguments parse(String source) {
         return new Arguments(source);
     }
 
+    /**
+     * Creates an Arguments instance from an array.
+     *
+     * @param args array of arguments
+     * @return Arguments instance
+     */
     public static Arguments parse(String[] args) {
         return new Arguments(args);
     }
 
+    /**
+     * Creates an Arguments instance with a custom delimiter.
+     *
+     * @param source command line string
+     * @param delimiterChar delimiter character as string
+     * @return Arguments instance
+     */
     public static Arguments parse(String source, String delimiterChar) {
         return new Arguments(source, delimiterChar);
     }
 
+    /**
+     * Creates an Arguments instance with a custom delimiter.
+     *
+     * @param source command line string
+     * @param delimiterChar delimiter character
+     * @return Arguments instance
+     */
     public static Arguments parse(String source, char delimiterChar) {
         return new Arguments(source, delimiterChar);
     }
 
+    /**
+     * Returns an iterator over arguments.
+     *
+     * @return iterator
+     */
     @Override
     public Iterator<String> iterator() {
         return new Iterator<String>() {
@@ -291,6 +502,11 @@ public class Arguments implements Iterable<String> {
         };
     }
 
+    /**
+     * Applies an action to each argument.
+     *
+     * @param action consumer to process each argument
+     */
     @Override
     public void forEach(Consumer<? super String> action) {
         for (String element : elements) {

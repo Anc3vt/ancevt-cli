@@ -28,6 +28,26 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+/**
+ * Builder for configuring and creating {@link ReplRunner}.
+ * <p>
+ * Example usage:
+ * <pre>
+ *     ReplRunner repl = ReplRunner.builder()
+ *         .withInput(System.in)
+ *         .withOutput(System.out)
+ *         .withDefaultCommands()
+ *         .withColorizer()
+ *         .configure(reg -> {
+ *             reg.command("hello")
+ *                .description("Says hello")
+ *                .action((r, a) -> r.println("Hello!"))
+ *                .build();
+ *         })
+ *         .build();
+ *     repl.start();
+ * </pre>
+ */
 public class ReplRunnerBuilder {
 
     private InputStream input;
@@ -38,46 +58,94 @@ public class ReplRunnerBuilder {
     private final List<Consumer<CommandRegistry>> registryActions = new ArrayList<>();
     private boolean useColorizer;
 
+    /**
+     * Sets the input stream for the REPL.
+     *
+     * @param in input stream, e.g. {@link System#in}
+     * @return this builder
+     */
     public ReplRunnerBuilder withInput(InputStream in) {
         this.input = in;
         return this;
     }
-
+    /**
+     * Sets the output stream for the REPL.
+     *
+     * @param out output stream, e.g. {@link System#out}
+     * @return this builder
+     */
     public ReplRunnerBuilder withOutput(OutputStream out) {
         this.output = out;
         return this;
     }
-
+    /**
+     * Sets the command registry to use.
+     * If not provided, a new empty {@link CommandRegistry} will be created.
+     *
+     * @param registry command registry instance
+     * @return this builder
+     */
     public ReplRunnerBuilder withRegistry(CommandRegistry registry) {
         this.registry = registry;
         return this;
     }
-
+    /**
+     * Sets the executor for asynchronous command execution.
+     * If not provided, async commands fall back to the common pool.
+     *
+     * @param executor custom executor
+     * @return this builder
+     */
     public ReplRunnerBuilder withExecutor(Executor executor) {
         this.executor = executor;
         return this;
     }
-
+    /**
+     * Adds an output filter that will be applied to all printed text.
+     *
+     * @param filter transformation function (e.g. colorizer)
+     * @return this builder
+     */
     public ReplRunnerBuilder addFilter(Function<String, String> filter) {
         filters.add(filter);
         return this;
     }
-
+    /**
+     * Enables the built-in colorizer filter.
+     * This replaces tags like {@code <red>} with ANSI escape codes.
+     *
+     * @return this builder
+     */
     public ReplRunnerBuilder withColorizer() {
         this.useColorizer = true;
         return this;
     }
-
+    /**
+     * Registers default commands such as {@code help} and {@code exit}.
+     *
+     * @return this builder
+     */
     public ReplRunnerBuilder withDefaultCommands() {
         registryActions.add(ReplRunnerBuilder::registerDefaultCommands);
         return this;
     }
-
+    /**
+     * Adds a configuration action that receives the {@link CommandRegistry}.
+     * Useful for registering custom commands.
+     *
+     * @param consumer registry configuration callback
+     * @return this builder
+     */
     public ReplRunnerBuilder configure(Consumer<CommandRegistry> consumer) {
         registryActions.add(consumer);
         return this;
     }
 
+    /**
+     * Builds and returns a new {@link ReplRunner} with the configured options.
+     *
+     * @return configured ReplRunner
+     */
     public ReplRunner build() {
         ReplRunner repl = new ReplRunner();
 

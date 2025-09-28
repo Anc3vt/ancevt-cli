@@ -27,7 +27,28 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-
+/**
+ * Represents a single REPL command.
+ *
+ * A command has:
+ * <ul>
+ *     <li>one or more keywords (command words)</li>
+ *     <li>a description</li>
+ *     <li>an action to execute</li>
+ * </ul>
+ *
+ * Example (using the builder API):
+ * <pre>
+ *     Command&lt;Void&gt; ping = Command.&lt;Void&gt;builder("ping")
+ *         .description("Simple ping command")
+ *         .action((repl, args) -&gt; repl.println("pong"))
+ *         .build();
+ *
+ *     registry.register(ping);
+ * </pre>
+ *
+ * @param <T> type of the result returned by the command
+ */
 public class Command<T> {
 
     private final List<String> commandWords;
@@ -38,7 +59,13 @@ public class Command<T> {
     private BiConsumer<ReplRunner, T> resultAction;
 
     private boolean isAsync;
-
+    /**
+     * Creates a new command with the given words, description and action.
+     *
+     * @param commandWords list of words (aliases) that trigger the command
+     * @param description  human-readable description
+     * @param action       function to execute when the command is invoked
+     */
     public Command(List<String> commandWords, String description, BiFunction<ReplRunner, Arguments, T> action) {
         if (commandWords.isEmpty()) {
             throw new IllegalArgumentException("commandWords must not be empty");
@@ -48,7 +75,12 @@ public class Command<T> {
             this.action = action;
         }
     }
-
+    /**
+     * Creates a new command with the given words and action.
+     *
+     * @param commandWords list of words (aliases) that trigger the command
+     * @param action       function to execute when the command is invoked
+     */
     public Command(List<String> commandWords, BiFunction<ReplRunner, Arguments, T> action) {
         if (commandWords.isEmpty()) {
             throw new IllegalArgumentException("commandWords must not be empty");
@@ -58,7 +90,12 @@ public class Command<T> {
             this.action = action;
         }
     }
-
+    /**
+     * Creates a new command with a single word and action.
+     *
+     * @param commandWord single keyword
+     * @param action      function to execute when the command is invoked
+     */
     public Command(String commandWord, BiFunction<ReplRunner, Arguments, T> action) {
         this.commandWords = new ArrayList<>();
         this.description = "";
@@ -66,7 +103,13 @@ public class Command<T> {
 
         commandWords.add(commandWord);
     }
-
+    /**
+     * Creates a new command with a single word, description and action.
+     *
+     * @param commandWord single keyword
+     * @param description human-readable description
+     * @param action      function to execute when the command is invoked
+     */
     public Command(String commandWord, String description, BiFunction<ReplRunner, Arguments, T> action) {
         this.commandWords = new ArrayList<>();
         this.description = description;
@@ -74,7 +117,14 @@ public class Command<T> {
 
         commandWords.add(commandWord);
     }
-
+    /**
+     * Creates a new command with words, description, action and result handler.
+     *
+     * @param commandWords list of keywords
+     * @param description  description text
+     * @param action       main execution function
+     * @param resultAction handler for processing the result
+     */
     public Command(List<String> commandWords, String description, BiFunction<ReplRunner, Arguments, T> action, BiConsumer<ReplRunner, T> resultAction) {
         this.resultAction = resultAction;
         if (commandWords.isEmpty()) {
@@ -85,7 +135,13 @@ public class Command<T> {
             this.action = action;
         }
     }
-
+    /**
+     * Creates a new command with words, action and result handler.
+     *
+     * @param commandWords list of keywords
+     * @param action       main execution function
+     * @param resultAction handler for processing the result
+     */
     public Command(List<String> commandWords, BiFunction<ReplRunner, Arguments, T> action, BiConsumer<ReplRunner, T> resultAction) {
         this.resultAction = resultAction;
         if (commandWords.isEmpty()) {
@@ -96,7 +152,13 @@ public class Command<T> {
             this.action = action;
         }
     }
-
+    /**
+     * Creates a new command with a single word, action and result handler.
+     *
+     * @param commandWord  single keyword
+     * @param action       main execution function
+     * @param resultAction handler for processing the result
+     */
     public Command(String commandWord, BiFunction<ReplRunner, Arguments, T> action, BiConsumer<ReplRunner, T> resultAction) {
         this.resultAction = resultAction;
         this.commandWords = new ArrayList<>();
@@ -105,7 +167,14 @@ public class Command<T> {
 
         commandWords.add(commandWord);
     }
-
+    /**
+     * Creates a new command with word, description, action and result handler.
+     *
+     * @param commandWord  single keyword
+     * @param description  description text
+     * @param action       main execution function
+     * @param resultAction handler for processing the result
+     */
     public Command(String commandWord, String description, BiFunction<ReplRunner, Arguments, T> action, BiConsumer<ReplRunner, T> resultAction) {
         this.resultAction = resultAction;
         this.commandWords = new ArrayList<>();
@@ -114,26 +183,45 @@ public class Command<T> {
 
         commandWords.add(commandWord);
     }
-
+    /**
+     * @return main function that executes the command
+     */
     public BiFunction<ReplRunner, Arguments, T> getAction() {
         return action;
     }
-
+    /**
+     * Sets a handler for processing the result after the command is executed.
+     *
+     * @param resultAction consumer for result values
+     */
     public void setResultAction(BiConsumer<ReplRunner, T> resultAction) {
         this.resultAction = resultAction;
     }
-
+    /**
+     * @return handler for processing results, or null if not set
+     */
     public BiConsumer<ReplRunner, T> getResultAction() {
         return resultAction;
     }
-
+    /**
+     * Executes the command synchronously.
+     *
+     * @param replRunner  runner context
+     * @param commandLine full input line
+     */
     public void execute(ReplRunner replRunner, String commandLine) {
         Arguments arguments = Arguments.parse(commandLine);
         arguments.skip();
         T result = action.apply(replRunner, arguments);
         if (resultAction != null) resultAction.accept(replRunner, result);
     }
-
+    /**
+     * Executes the command asynchronously using {@link ReplRunner#getExecutor()}.
+     * Falls back to the common ForkJoinPool if no executor is configured.
+     *
+     * @param replRunner  runner context
+     * @param commandLine full input line
+     */
     public void executeAsync(ReplRunner replRunner, String commandLine) {
         Runnable task = () -> {
             try {
@@ -164,14 +252,21 @@ public class Command<T> {
     }
 
 
+    /**
+     * @return description text
+     */
     public String getDescription() {
         return description;
     }
-
+    /**
+     * @return the primary command word
+     */
     public String getCommandWord() {
         return commandWords.get(0);
     }
-
+    /**
+     * @return all command words (aliases)
+     */
     public List<String> getCommandWords() {
         return commandWords;
     }
@@ -184,23 +279,35 @@ public class Command<T> {
                 ", action=" + action +
                 '}';
     }
-
+    /**
+     * @return true if the command should be executed asynchronously
+     */
     public boolean isAsync() {
         return isAsync;
     }
-
+    /**
+     * Sets whether the command should be executed asynchronously.
+     *
+     * @param async true for async
+     */
     public void setAsync(boolean async) {
         isAsync = async;
     }
-
+    /**
+     * Creates a new command builder for a single word.
+     */
     public static <T> Builder<T> builder(String commandWord) {
         return new Builder<>(commandWord);
     }
-
+    /**
+     * Creates a new command builder for a list of words.
+     */
     public static <T> Builder<T> builder(List<String> commandWords) {
         return new Builder<>(commandWords);
     }
-
+    /**
+     * Creates a new command builder for one or more words.
+     */
     public static <T> Builder<T> builder(String... commandWords) {
         if (commandWords.length == 1) {
             return new Builder<>(commandWords[0]);
@@ -209,6 +316,22 @@ public class Command<T> {
         }
     }
 
+    /**
+     * Fluent builder for constructing {@link Command} instances.
+     *
+     * <p>Example usage:</p>
+     * <pre>
+     * Command&lt;Void&gt; hello = Command.&lt;Void&gt;builder("hello")
+     *     .description("Prints greeting")
+     *     .action((repl, args) -&gt; repl.println("Hello world!"))
+     *     .async()
+     *     .build();
+     *
+     * registry.register(hello);
+     * </pre>
+     *
+     * @param <T> type of result returned by the command
+     */
     public static class Builder<T> {
         private final List<String> commandWords = new ArrayList<>();
         private String description = "";
@@ -216,24 +339,54 @@ public class Command<T> {
         private BiConsumer<ReplRunner, T> resultAction;
         private boolean async = false;
 
+        /**
+         * Creates a builder for a command with one or more keywords.
+         *
+         * @param words command keywords (aliases)
+         */
         public Builder(String... words) {
             this.commandWords.addAll(Arrays.asList(words));
         }
 
+        /**
+         * Creates a builder for a command with a list of keywords.
+         *
+         * @param words list of command keywords (aliases)
+         */
         public Builder(List<String> words) {
             this.commandWords.addAll(words);
         }
 
+        /**
+         * Sets a human-readable description for the command.
+         *
+         * @param description description text
+         * @return this builder
+         */
         public Builder<T> description(String description) {
             this.description = description;
             return this;
         }
 
+        /**
+         * Defines the main action to execute when the command is invoked.
+         *
+         * @param action function taking {@link ReplRunner} and {@link Arguments},
+         *               returning a result of type {@code T}
+         * @return this builder
+         */
         public Builder<T> action(BiFunction<ReplRunner, Arguments, T> action) {
             this.action = action;
             return this;
         }
 
+        /**
+         * Defines the main action as a consumer (no return value).
+         * Equivalent to using {@code action(...)} with {@code null} return.
+         *
+         * @param consumer consumer taking {@link ReplRunner} and {@link Arguments}
+         * @return this builder
+         */
         public Builder<T> action(BiConsumer<ReplRunner, Arguments> consumer) {
             this.action = (r, a) -> {
                 consumer.accept(r, a);
@@ -242,26 +395,51 @@ public class Command<T> {
             return this;
         }
 
+        /**
+         * Sets a handler for processing the result after command execution.
+         *
+         * @param resultAction consumer taking {@link ReplRunner} and the result value
+         * @return this builder
+         */
         public Builder<T> result(BiConsumer<ReplRunner, T> resultAction) {
             this.resultAction = resultAction;
             return this;
         }
 
+        /**
+         * Marks the command as asynchronous.
+         * It will be executed via {@link java.util.concurrent.CompletableFuture}
+         * using the {@link ReplRunner#getExecutor()} if provided.
+         *
+         * @return this builder
+         */
         public Builder<T> async() {
             this.async = true;
             return this;
         }
 
+        /**
+         * Builds the command instance with the current configuration.
+         *
+         * @return new {@link Command} instance
+         */
         public Command<T> build() {
             Command<T> command = new Command<>(commandWords, description, action, resultAction);
             command.setAsync(async);
             return command;
         }
 
+        /**
+         * Builds the command and immediately registers it
+         * in the given {@link CommandRegistry}.
+         *
+         * @param registry registry to register the command in
+         */
         public void register(CommandRegistry registry) {
             registry.register(build());
         }
     }
+
 
 
 }

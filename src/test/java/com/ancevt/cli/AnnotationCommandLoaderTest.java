@@ -67,7 +67,7 @@ public class AnnotationCommandLoaderTest {
     @Test
     public void testReplCommandWithReplExecuteMethod() throws Exception {
         CommandRegistry registry = new CommandRegistry();
-        registry.register(HelloCommand.class);
+        registry.registerClass(HelloCommand.class);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         ReplRunner repl = new ReplRunner(registry);
@@ -99,8 +99,8 @@ public class AnnotationCommandLoaderTest {
     @Test
     public void testHelpIncludesAnnotatedCommands() {
         CommandRegistry registry = new CommandRegistry();
-        registry.register(HelloCommand.class);
-        registry.register(MixedCommand.class);
+        registry.registerClass(HelloCommand.class);
+        registry.registerClass(MixedCommand.class);
 
         String help = registry.formattedCommandList();
 

@@ -16,7 +16,9 @@
  * limitations under the License.
  */
 package com.ancevt.cli.argument;
-
+/**
+ * Exception thrown when argument parsing fails.
+ */
 public class ArgumentParseException extends RuntimeException {
 
     public ArgumentParseException() {
