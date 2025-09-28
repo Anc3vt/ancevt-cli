@@ -1,21 +1,3 @@
-/**
- * Copyright (C) 2025 Ancevt.
- * See the notice.md file distributed with this work for additional
- * information regarding copyright ownership.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.ancevt.cli.repl;
 
 import com.ancevt.cli.filter.ColorizeFilter;
@@ -25,6 +7,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class ReplRunnerBuilder {
@@ -34,8 +17,8 @@ public class ReplRunnerBuilder {
     private CommandRegistry registry;
     private Executor executor;
     private final List<Function<String, String>> filters = new ArrayList<>();
+    private final List<Consumer<CommandRegistry>> registryActions = new ArrayList<>();
     private boolean useColorizer;
-    private boolean addDefaultCommands;
 
     public ReplRunnerBuilder withInput(InputStream in) {
         this.input = in;
@@ -68,7 +51,12 @@ public class ReplRunnerBuilder {
     }
 
     public ReplRunnerBuilder withDefaultCommands() {
-        this.addDefaultCommands = true;
+        registryActions.add(ReplRunnerBuilder::registerDefaultCommands);
+        return this;
+    }
+
+    public ReplRunnerBuilder configure(Consumer<CommandRegistry> consumer) {
+        registryActions.add(consumer);
         return this;
     }
 
@@ -76,7 +64,9 @@ public class ReplRunnerBuilder {
         ReplRunner repl = new ReplRunner();
 
         // registry
-        repl.setRegistry(registry != null ? registry : new CommandRegistry());
+        CommandRegistry finalRegistry = (registry != null ? registry : new CommandRegistry());
+        registryActions.forEach(action -> action.accept(finalRegistry));
+        repl.setRegistry(finalRegistry);
 
         // streams
         if (input != null) repl.setInputStream(input);
@@ -88,11 +78,6 @@ public class ReplRunnerBuilder {
         // filters
         filters.forEach(repl::addOutputFilter);
         if (useColorizer) repl.addOutputFilter(new ColorizeFilter()::colorize);
-
-        // default commands
-        if (addDefaultCommands) {
-            registerDefaultCommands(repl.getRegistry());
-        }
 
         return repl;
     }
