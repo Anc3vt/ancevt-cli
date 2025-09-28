@@ -18,8 +18,6 @@
 package com.ancevt.cli.repl;
 
 
-import com.ancevt.cli.filter.ColorizeFilter;
-
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -174,14 +172,14 @@ public class ReplRunner {
 
     // Some dev sandbox
     public static void main(String[] args) throws IOException {
-        ReplRunner repl = new ReplRunner();
+        ReplRunner repl = new ReplRunnerBuilder()
+                .withColorizer()
+                .withRegistry(new CommandRegistry())
+                .withOutput(System.out)
+                .build();
 
-        repl.addOutputFilter(new ColorizeFilter()::colorize);
 
-        CommandRegistry registry = repl.getRegistry();
-
-
-        registerDefaultCommands(registry);
+        registerDefaultCommands(repl.getRegistry());
         repl.start(System.in, System.out);
     }
 
