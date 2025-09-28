@@ -22,79 +22,88 @@ import com.ancevt.cli.filter.ColorizeFilter;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executor;
 import java.util.function.Function;
 
 public class ReplRunnerBuilder {
 
-    private final ReplRunner replRunner;
-
-    public ReplRunnerBuilder() {
-        this.replRunner = new ReplRunner();
-    }
+    private InputStream input;
+    private OutputStream output;
+    private CommandRegistry registry;
+    private Executor executor;
+    private final List<Function<String, String>> filters = new ArrayList<>();
+    private boolean useColorizer;
+    private boolean addDefaultCommands;
 
     public ReplRunnerBuilder withInput(InputStream in) {
-        replRunner.setInputStream(in);
+        this.input = in;
         return this;
     }
 
     public ReplRunnerBuilder withOutput(OutputStream out) {
-        replRunner.setOutputStream(out);
+        this.output = out;
         return this;
     }
 
     public ReplRunnerBuilder withRegistry(CommandRegistry registry) {
-        replRunner.setRegistry(registry);
+        this.registry = registry;
         return this;
     }
 
-    public ReplRunnerBuilder withExecutor(java.util.concurrent.Executor executor) {
-        replRunner.setExecutor(executor);
+    public ReplRunnerBuilder withExecutor(Executor executor) {
+        this.executor = executor;
         return this;
     }
 
     public ReplRunnerBuilder addFilter(Function<String, String> filter) {
-        replRunner.addOutputFilter(filter);
+        filters.add(filter);
         return this;
     }
 
     public ReplRunnerBuilder withColorizer() {
-        replRunner.addOutputFilter(new ColorizeFilter()::colorize);
-        return this;
-    }
-
-    public ReplRunner build() {
-        return replRunner;
-    }
-
-    public ReplRunnerBuilder addCommand(Command<?> command) {
-        replRunner.getRegistry().register(command);
-        return this;
-    }
-
-    public ReplRunnerBuilder addCommands(Command<?>... commands) {
-        Arrays.stream(commands).forEach(replRunner.getRegistry()::register);
+        this.useColorizer = true;
         return this;
     }
 
     public ReplRunnerBuilder withDefaultCommands() {
-        CommandRegistry registry = replRunner.getRegistry();
+        this.addDefaultCommands = true;
+        return this;
+    }
 
-        registry.command("test")
-                .description("Prints each argument with index")
-                .action((r, a) -> {
-                    r.println("tested");
-                    for (int i = 0; i < a.size(); i++) {
-                        r.println(i + "\t" + a.getElements()[i]);
-                    }
-                })
-                .build();
+    public ReplRunner build() {
+        ReplRunner repl = new ReplRunner();
 
+        // registry
+        repl.setRegistry(registry != null ? registry : new CommandRegistry());
+
+        // streams
+        if (input != null) repl.setInputStream(input);
+        if (output != null) repl.setOutputStream(output);
+
+        // executor
+        if (executor != null) repl.setExecutor(executor);
+
+        // filters
+        filters.forEach(repl::addOutputFilter);
+        if (useColorizer) repl.addOutputFilter(new ColorizeFilter()::colorize);
+
+        // default commands
+        if (addDefaultCommands) {
+            registerDefaultCommands(repl.getRegistry());
+        }
+
+        return repl;
+    }
+
+    private static void registerDefaultCommands(CommandRegistry registry) {
         registry.command("help")
                 .description("Shows help info")
                 .action((r, a) -> {
                     r.println("<g>" + r.getRegistry().formattedCommandList());
-                }).build();
+                })
+                .build();
 
         registry.command("exit", "/q")
                 .description("Exit the REPL")
@@ -102,9 +111,5 @@ public class ReplRunnerBuilder {
                     r.stop();
                 })
                 .build();
-
-        return this;
     }
-
 }
-

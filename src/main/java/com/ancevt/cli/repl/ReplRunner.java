@@ -186,16 +186,17 @@ public class ReplRunner {
     public static void main(String[] args) throws IOException {
         ReplRunner repl = ReplRunner.builder()
                 .withColorizer()
-                .withRegistry(new CommandRegistry())
+                .withDefaultCommands()
                 .withOutput(System.out)
+                .withRegistry(new CommandRegistry())
                 .build();
 
 
-        registerDefaultCommands(repl.getRegistry());
+        registerCommands(repl.getRegistry());
         repl.start(System.in, System.out);
     }
 
-    private static void registerDefaultCommands(CommandRegistry registry) {
+    private static void registerCommands(CommandRegistry registry) {
 
         registry.command("test")
                 .description("Prints each argument with index")
@@ -204,20 +205,6 @@ public class ReplRunner {
                     for (int i = 0; i < a.size(); i++) {
                         r.println(i + "\t" + a.getElements()[i]);
                     }
-                })
-                .build();
-
-        registry.command("help")
-                .description("Shows help info")
-                .action((r, a) -> {
-                    r.println("<g>" + r.getRegistry().formattedCommandList());
-                })
-                .build();
-
-        registry.command("exit", "/q")
-                .description("Exit the REPL")
-                .action((r, a) -> {
-                    r.stop();
                 })
                 .build();
     }
