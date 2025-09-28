@@ -49,6 +49,15 @@ With **Ancevt CLI**, you don’t need to glue together multiple libraries — ev
 
 ---
 
+## 📥 Installation
+```xml
+<dependency>
+  <groupId>com.ancevt.cli</groupId>
+  <artifactId>ancevt-cli</artifactId>
+  <version>1.0.0</version>
+</dependency>
+```
+
 ## 🚀 Quick Start
 
 ### Before: the old way
