@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -54,6 +55,8 @@ public class ReplRunnerBuilder {
     private OutputStream output;
     private CommandRegistry registry;
     private Executor executor;
+    private boolean autoShutdownExecutor = false;
+    private boolean executorOwnedInternally = false;
     private final List<Function<String, String>> filters = new ArrayList<>();
     private final List<Consumer<CommandRegistry>> registryActions = new ArrayList<>();
     private boolean useColorizer;
@@ -90,14 +93,33 @@ public class ReplRunnerBuilder {
         return this;
     }
     /**
-     * Sets the executor for asynchronous command execution.
-     * If not provided, async commands fall back to the common pool.
+     * Sets the executor to be used for command execution.
+     * <p>
+     * If not set, a default cached thread pool will be used.
+     * Note: If you provide your own executor, you are responsible
+     * for shutting it down, unless {@link #autoShutdownExecutor(boolean)} is set to true.
      *
-     * @param executor custom executor
+     * @param executor the executor to use
      * @return this builder
      */
     public ReplRunnerBuilder withExecutor(Executor executor) {
         this.executor = executor;
+        this.executorOwnedInternally = false;
+        return this;
+    }
+
+    /**
+     * Indicates whether the executor should be automatically shut down when
+     * {@link ReplRunner#stop()} is called.
+     * <p>
+     * This is useful when the executor is dedicated to this REPL instance.
+     * Use with caution if you're sharing the executor across components.
+     *
+     * @param value true to auto-shutdown the executor; false otherwise
+     * @return this builder
+     */
+    public ReplRunnerBuilder autoShutdownExecutor(boolean value) {
+        this.autoShutdownExecutor = value;
         return this;
     }
     /**
@@ -147,7 +169,18 @@ public class ReplRunnerBuilder {
      * @return configured ReplRunner
      */
     public ReplRunner build() {
+        if (executor == null) {
+            executor = Executors.newCachedThreadPool(r -> {
+                Thread t = new Thread(r);
+                t.setDaemon(true);
+                return t;
+            });
+            executorOwnedInternally = true;
+        }
+
         ReplRunner repl = new ReplRunner();
+        repl.setShutdownExecutorOnStop(autoShutdownExecutor || executorOwnedInternally);
+        repl.setExecutor(executor);
 
         // registry
         CommandRegistry finalRegistry = (registry != null ? registry : new CommandRegistry());

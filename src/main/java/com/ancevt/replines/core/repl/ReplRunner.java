@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
 
@@ -51,6 +52,7 @@ public class ReplRunner {
     private OutputStream outputStream;
 
     private Executor executor;
+    private boolean shutdownExecutorOnStop = false;
 
     private final List<Function<String, String>> outputFilters = new ArrayList<>();
 
@@ -226,6 +228,10 @@ public class ReplRunner {
     /** Stops the REPL loop. */
     public void stop() {
         running = false;
+
+        if (shutdownExecutorOnStop && executor instanceof ExecutorService) {
+            ((ExecutorService) executor).shutdownNow();
+        }
     }
     /** @return executor used for async command execution */
     public Executor getExecutor() {
@@ -242,6 +248,9 @@ public class ReplRunner {
         return new ReplRunnerBuilder();
     }
 
+    void setShutdownExecutorOnStop(boolean value) {
+        this.shutdownExecutorOnStop = value;
+    }
 
     // Some dev sandbox
     public static void main(String[] args) throws IOException {
@@ -260,7 +269,6 @@ public class ReplRunner {
                 .withColorizer()
                 .withDefaultCommands()
                 .withOutput(System.out)
-                .withExecutor(Executors.newCachedThreadPool())
                 .withRegistry(new CommandRegistry())
                 .build();
 
@@ -280,6 +288,8 @@ public class ReplRunner {
 
 
         repl.start(System.in, System.out);
+
+        System.out.println("END");
     }
 
 
