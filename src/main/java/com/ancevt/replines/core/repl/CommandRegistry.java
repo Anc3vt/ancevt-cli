@@ -16,7 +16,9 @@
  * limitations under the License.
  */
 
-package com.ancevt.cli.repl;
+package com.ancevt.replines.core.repl;
+
+import com.ancevt.replines.core.repl.annotation.ReplCommand;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -73,7 +75,7 @@ public class CommandRegistry {
 
     /**
      * Registers commands by scanning a given instance for
-     * {@link com.ancevt.cli.repl.annotation.ReplCommand} annotations.
+     * {@link ReplCommand} annotations.
      *
      * @param instance object with annotated methods or class
      * @return this registry for chaining
@@ -107,7 +109,7 @@ public class CommandRegistry {
 
     /**
      * Registers commands by scanning a class for
-     * {@link com.ancevt.cli.repl.annotation.ReplCommand} annotations.
+     * {@link ReplCommand} annotations.
      * The class must have a no-arg constructor.
      *
      * @param clazz class with annotated methods or type

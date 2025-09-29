@@ -16,13 +16,13 @@
  * limitations under the License.
  */
 
-package com.ancevt.cli;
+package com.ancevt.replines.core;
 
-import com.ancevt.cli.argument.ArgumentParseException;
-import com.ancevt.cli.argument.Arguments;
-import com.ancevt.cli.argument.ArgumentSplitHelper;
-import com.ancevt.cli.repl.CommandRegistry;
-import com.ancevt.cli.repl.ReplRunner;
+import com.ancevt.replines.core.argument.ArgumentParseException;
+import com.ancevt.replines.core.argument.Arguments;
+import com.ancevt.replines.core.argument.ArgumentSplitHelper;
+import com.ancevt.replines.core.repl.CommandRegistry;
+import com.ancevt.replines.core.repl.ReplRunner;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;

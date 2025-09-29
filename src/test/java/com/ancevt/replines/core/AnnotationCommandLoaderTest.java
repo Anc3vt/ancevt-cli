@@ -16,13 +16,14 @@
  * limitations under the License.
  */
 
-package com.ancevt.cli;
+package com.ancevt.replines.core;
 
-import com.ancevt.cli.argument.Arguments;
-import com.ancevt.cli.repl.CommandRegistry;
-import com.ancevt.cli.repl.ReplRunner;
-import com.ancevt.cli.repl.annotation.ReplCommand;
-import com.ancevt.cli.repl.annotation.ReplExecute;
+import com.ancevt.replines.core.argument.Arguments;
+import com.ancevt.replines.core.repl.CommandRegistry;
+import com.ancevt.replines.core.repl.ReplRunner;
+import com.ancevt.replines.core.repl.annotation.ReplCommand;
+import com.ancevt.replines.core.repl.annotation.ReplExecute;
+import com.ancevt.replines.core.repl.UnknownCommandException;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -121,7 +122,7 @@ public class AnnotationCommandLoaderTest {
             repl.execute("doesnotexist");
             fail("Expected UnknownCommandException to be thrown");
         } catch (Exception e) {
-            assertTrue(e instanceof com.ancevt.cli.repl.UnknownCommandException);
+            assertTrue(e instanceof UnknownCommandException);
             assertTrue(e.getMessage().contains("Unknown command"));
         }
     }

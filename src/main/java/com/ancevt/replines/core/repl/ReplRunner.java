@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ancevt.cli.repl;
+package com.ancevt.replines.core.repl;
 
 
 import java.io.*;
