@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-package com.ancevt.cli.repl;
+package com.ancevt.replines.core.repl;
 
-import com.ancevt.cli.argument.Arguments;
-import com.ancevt.cli.repl.annotation.ReplCommand;
-import com.ancevt.cli.repl.annotation.ReplExecute;
+import com.ancevt.replines.core.argument.Arguments;
+import com.ancevt.replines.core.repl.annotation.ReplCommand;
+import com.ancevt.replines.core.repl.annotation.ReplExecute;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -29,8 +29,8 @@ import java.util.function.BiFunction;
 
 /**
  * Loads commands from classes and methods annotated with
- * {@link com.ancevt.cli.repl.annotation.ReplCommand}
- * and {@link com.ancevt.cli.repl.annotation.ReplExecute}.
+ * {@link ReplCommand}
+ * and {@link ReplExecute}.
  * <p>
  * This utility scans objects or classes using reflection
  * and registers discovered commands into a {@link CommandRegistry}.

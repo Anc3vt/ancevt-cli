@@ -1,4 +1,4 @@
-Ancevt CLI library
+Replines Core library
 
 Copyright (C) 2025 Ancevt (me@ancevt.com)
 

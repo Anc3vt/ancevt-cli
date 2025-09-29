@@ -15,28 +15,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ancevt.cli.argument;
-/**
- * Exception thrown when argument parsing fails.
- */
-public class ArgumentParseException extends RuntimeException {
+package com.ancevt.replines.core.repl;
 
-    public ArgumentParseException() {
+public class UnknownCommandException extends Exception {
+
+    private String commandWord;
+    private String commandLine;
+    private CommandRegistry registry;
+
+    public UnknownCommandException(String message, String commandWord, String commandLine, CommandRegistry registry) {
+        super(message);
+        this.commandWord = commandWord;
+        this.commandLine = commandLine;
+        this.registry = registry;
     }
 
-    public ArgumentParseException(String message) {
+    public UnknownCommandException(String message) {
         super(message);
     }
 
-    public ArgumentParseException(String message, Throwable cause) {
+    public UnknownCommandException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public ArgumentParseException(Throwable cause) {
-        super(cause);
+    public CommandRegistry getRegistry() {
+        return registry;
     }
 
-    public ArgumentParseException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
+    public String getCommandWord() {
+        return commandWord;
+    }
+
+    public String getCommandLine() {
+        return commandLine;
     }
 }

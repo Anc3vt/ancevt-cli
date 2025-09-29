@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-package com.ancevt.cli.repl;
+package com.ancevt.replines.core.repl;
 
-import com.ancevt.cli.filter.ColorizeFilter;
+import com.ancevt.replines.filter.ColorizeFilter;
 
 import java.io.InputStream;
 import java.io.OutputStream;

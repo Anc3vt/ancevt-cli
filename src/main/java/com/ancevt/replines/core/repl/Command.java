@@ -15,10 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ancevt.cli.repl;
+package com.ancevt.replines.core.repl;
 
 
-import com.ancevt.cli.argument.Arguments;
+import com.ancevt.replines.core.argument.Arguments;
 
 import java.util.ArrayList;
 import java.util.Arrays;

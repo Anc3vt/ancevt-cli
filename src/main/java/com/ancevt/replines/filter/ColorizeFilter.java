@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.ancevt.cli.filter;
+package com.ancevt.replines.filter;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

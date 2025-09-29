@@ -1,4 +1,4 @@
-# Ancevt CLI Library
+# Replines Core Library
 
 A lightweight but powerful Java library for building **CLI tools** and **REPL (Read-Eval-Print Loop) applications**. It combines simple **argument parsing**, a **flexible command registry**, and a built-in **interactive shell**, giving you a production-ready CLI in just a few lines.
 
@@ -18,8 +18,8 @@ This library is perfect for developer tools, admin consoles, embedded CLIs, or e
 
 ## 🚨 Why not just Picocli or JLine?
 
-| Feature                   | Ancevt CLI | Picocli | JLine         |
-| ------------------------- | ---------- | ------- | ------------- |
+| Feature                   | Replines   | Picocli | JLine         |
+| ------------------------- |------------| ------- | ------------- |
 | Lightweight               | ✅ Yes      | ❌ Heavy | ⚠️ Medium     |
 | Async execution           | ✅ Built-in | ❌       | ❌             |
 | Annotation-based commands | ✅ Yes      | ✅ Yes   | ❌             |
@@ -27,7 +27,7 @@ This library is perfect for developer tools, admin consoles, embedded CLIs, or e
 | Built-in REPL loop        | ✅ Yes      | ❌       | ⚠️ Only input |
 | Colorized output (ANSI)   | ✅ Yes      | ❌       | ❌             |
 
-With **Ancevt CLI**, you don’t need to glue together multiple libraries — everything you need for a functional REPL/CLI is already here.
+With **Replines**, you don’t need to glue together multiple libraries — everything you need for a functional REPL/CLI is already here.
 
 ---
 
@@ -52,8 +52,8 @@ With **Ancevt CLI**, you don’t need to glue together multiple libraries — ev
 ## 📥 Installation
 ```xml
 <dependency>
-  <groupId>com.ancevt.cli</groupId>
-  <artifactId>ancevt-cli</artifactId>
+  <groupId>com.ancevt.replines</groupId>
+  <artifactId>replines-core</artifactId>
   <version>1.0.0</version>
 </dependency>
 ```
@@ -72,7 +72,7 @@ while (true) {
 }
 ```
 
-### After: with Ancevt CLI
+### After: with Replines
 
 ```java
 ReplRunner repl = new ReplRunner();
@@ -247,12 +247,12 @@ You get:
 ## 📦 Package Overview
 
 ```
-com.ancevt.cli.argument
+com.ancevt.replines.core.argument
   ├── Arguments              // Argument parser
   ├── ArgumentParseException // Custom exception
   └── ArgumentSplitHelper    // Tokenizer
 
-com.ancevt.cli.repl
+com.ancevt.replines.core.repl
   ├── ReplRunner             // Main REPL loop
   ├── CommandRegistry        // Stores commands
   ├── Command                // Command definition
@@ -260,7 +260,7 @@ com.ancevt.cli.repl
   ├── ReplRunnerBuilder      // Fluent builder
   └── annotation             // @ReplCommand, @ReplExecute
 
-com.ancevt.cli.filter
+com.ancevt.replines.filter
   └── ColorizeFilter         // ANSI color tags
 ```
 

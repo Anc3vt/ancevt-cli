@@ -4,13 +4,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.ancevt.cli</groupId>
-    <artifactId>ancevt-cli</artifactId>
+    <groupId>com.ancevt.replines</groupId>
+    <artifactId>replines-core</artifactId>
     <version>1.0.0</version>
 
-    <name>Ancevt CLI Library</name>
-    <description>Lightweight CLI/REPL library for Java applications</description>
-    <url>https://github.com/Anc3vt/ancevt-cli</url>
+    <name>Replines Core</name>
+    <description>Lightweight Commands/CLI/REPL library for Java applications</description>
+    <url>https://github.com/Anc3vt/replines-core</url>
 
     <developers>
         <developer>
@@ -29,9 +29,9 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:https://github.com/Anc3vt/ancevt-cli.git</connection>
-        <developerConnection>scm:git:git@github.com:Anc3vt/ancevt-cli.git</developerConnection>
-        <url>https://github.com/Anc3vt/ancevt-cli</url>
+        <connection>scm:git:https://github.com/Anc3vt/replines-core.git</connection>
+        <developerConnection>scm:git:git@github.com:Anc3vt/replines-core.git</developerConnection>
+        <url>https://github.com/Anc3vt/replines-core</url>
     </scm>
 
     <dependencyManagement>
