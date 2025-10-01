@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2025 Ancevt.
  * See the notice.md file distributed with this work for additional
  * information regarding copyright ownership.
@@ -43,5 +43,5 @@ import static java.lang.annotation.ElementType.FIELD;
 @Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
 @Target({FIELD})
 public @interface CommandArgument {
-
+    boolean required() default true;
 }

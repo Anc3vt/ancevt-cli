@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2025 Ancevt.
  * See the notice.md file distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,6 +19,7 @@ package com.ancevt.replines.core.repl;
 
 
 import com.ancevt.replines.core.argument.Arguments;
+import com.ancevt.replines.core.argument.reflection.ArgumentBinder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,16 +48,16 @@ import java.util.function.BiFunction;
  *     registry.register(ping);
  * </pre>
  *
- * @param <T> type of the result returned by the command
+ * @param <R> type of the result returned by the command
  */
-public class Command<T> {
+public class Command<R> {
 
     private final List<String> commandWords;
     private final String description;
 
-    private final BiFunction<ReplRunner, Arguments, T> action;
+    private final BiFunction<ReplRunner, Arguments, R> action;
 
-    private BiConsumer<ReplRunner, T> resultAction;
+    private BiConsumer<ReplRunner, R> resultAction;
 
     private boolean isAsync;
     /**
@@ -66,7 +67,7 @@ public class Command<T> {
      * @param description  human-readable description
      * @param action       function to execute when the command is invoked
      */
-    public Command(List<String> commandWords, String description, BiFunction<ReplRunner, Arguments, T> action) {
+    public Command(List<String> commandWords, String description, BiFunction<ReplRunner, Arguments, R> action) {
         if (commandWords.isEmpty()) {
             throw new IllegalArgumentException("commandWords must not be empty");
         } else {
@@ -81,7 +82,7 @@ public class Command<T> {
      * @param commandWords list of words (aliases) that trigger the command
      * @param action       function to execute when the command is invoked
      */
-    public Command(List<String> commandWords, BiFunction<ReplRunner, Arguments, T> action) {
+    public Command(List<String> commandWords, BiFunction<ReplRunner, Arguments, R> action) {
         if (commandWords.isEmpty()) {
             throw new IllegalArgumentException("commandWords must not be empty");
         } else {
@@ -96,7 +97,7 @@ public class Command<T> {
      * @param commandWord single keyword
      * @param action      function to execute when the command is invoked
      */
-    public Command(String commandWord, BiFunction<ReplRunner, Arguments, T> action) {
+    public Command(String commandWord, BiFunction<ReplRunner, Arguments, R> action) {
         this.commandWords = new ArrayList<>();
         this.description = "";
         this.action = action;
@@ -110,7 +111,7 @@ public class Command<T> {
      * @param description human-readable description
      * @param action      function to execute when the command is invoked
      */
-    public Command(String commandWord, String description, BiFunction<ReplRunner, Arguments, T> action) {
+    public Command(String commandWord, String description, BiFunction<ReplRunner, Arguments, R> action) {
         this.commandWords = new ArrayList<>();
         this.description = description;
         this.action = action;
@@ -125,7 +126,7 @@ public class Command<T> {
      * @param action       main execution function
      * @param resultAction handler for processing the result
      */
-    public Command(List<String> commandWords, String description, BiFunction<ReplRunner, Arguments, T> action, BiConsumer<ReplRunner, T> resultAction) {
+    public Command(List<String> commandWords, String description, BiFunction<ReplRunner, Arguments, R> action, BiConsumer<ReplRunner, R> resultAction) {
         this.resultAction = resultAction;
         if (commandWords.isEmpty()) {
             throw new IllegalArgumentException("commandWords must not be empty");
@@ -142,7 +143,7 @@ public class Command<T> {
      * @param action       main execution function
      * @param resultAction handler for processing the result
      */
-    public Command(List<String> commandWords, BiFunction<ReplRunner, Arguments, T> action, BiConsumer<ReplRunner, T> resultAction) {
+    public Command(List<String> commandWords, BiFunction<ReplRunner, Arguments, R> action, BiConsumer<ReplRunner, R> resultAction) {
         this.resultAction = resultAction;
         if (commandWords.isEmpty()) {
             throw new IllegalArgumentException("commandWords must not be empty");
@@ -159,7 +160,7 @@ public class Command<T> {
      * @param action       main execution function
      * @param resultAction handler for processing the result
      */
-    public Command(String commandWord, BiFunction<ReplRunner, Arguments, T> action, BiConsumer<ReplRunner, T> resultAction) {
+    public Command(String commandWord, BiFunction<ReplRunner, Arguments, R> action, BiConsumer<ReplRunner, R> resultAction) {
         this.resultAction = resultAction;
         this.commandWords = new ArrayList<>();
         this.description = "";
@@ -175,7 +176,7 @@ public class Command<T> {
      * @param action       main execution function
      * @param resultAction handler for processing the result
      */
-    public Command(String commandWord, String description, BiFunction<ReplRunner, Arguments, T> action, BiConsumer<ReplRunner, T> resultAction) {
+    public Command(String commandWord, String description, BiFunction<ReplRunner, Arguments, R> action, BiConsumer<ReplRunner, R> resultAction) {
         this.resultAction = resultAction;
         this.commandWords = new ArrayList<>();
         this.description = description;
@@ -186,7 +187,7 @@ public class Command<T> {
     /**
      * @return main function that executes the command
      */
-    public BiFunction<ReplRunner, Arguments, T> getAction() {
+    public BiFunction<ReplRunner, Arguments, R> getAction() {
         return action;
     }
     /**
@@ -194,13 +195,13 @@ public class Command<T> {
      *
      * @param resultAction consumer for result values
      */
-    public void setResultAction(BiConsumer<ReplRunner, T> resultAction) {
+    public void setResultAction(BiConsumer<ReplRunner, R> resultAction) {
         this.resultAction = resultAction;
     }
     /**
      * @return handler for processing results, or null if not set
      */
-    public BiConsumer<ReplRunner, T> getResultAction() {
+    public BiConsumer<ReplRunner, R> getResultAction() {
         return resultAction;
     }
     /**
@@ -212,7 +213,7 @@ public class Command<T> {
     public void execute(ReplRunner replRunner, String commandLine) {
         Arguments arguments = Arguments.parse(commandLine);
         arguments.skip();
-        T result = action.apply(replRunner, arguments);
+        R result = action.apply(replRunner, arguments);
         if (resultAction != null) resultAction.accept(replRunner, result);
     }
     /**
@@ -227,7 +228,7 @@ public class Command<T> {
             try {
                 Arguments arguments = Arguments.parse(commandLine);
                 arguments.skip();
-                T result = action.apply(replRunner, arguments);
+                R result = action.apply(replRunner, arguments);
 
                 if (result != null) {
                     if (resultAction != null) {
@@ -296,19 +297,19 @@ public class Command<T> {
     /**
      * Creates a new command builder for a single word.
      */
-    public static <T> Builder<T> builder(String commandWord) {
+    public static <R> Builder<R> builder(String commandWord) {
         return new Builder<>(commandWord);
     }
     /**
      * Creates a new command builder for a list of words.
      */
-    public static <T> Builder<T> builder(List<String> commandWords) {
+    public static <R> Builder<R> builder(List<String> commandWords) {
         return new Builder<>(commandWords);
     }
     /**
      * Creates a new command builder for one or more words.
      */
-    public static <T> Builder<T> builder(String... commandWords) {
+    public static <R> Builder<R> builder(String... commandWords) {
         if (commandWords.length == 1) {
             return new Builder<>(commandWords[0]);
         } else {
@@ -330,13 +331,13 @@ public class Command<T> {
      * registry.register(hello);
      * </pre>
      *
-     * @param <T> type of result returned by the command
+     * @param <R> type of result returned by the command
      */
-    public static class Builder<T> {
+    public static class Builder<R> {
         private final List<String> commandWords = new ArrayList<>();
         private String description = "";
-        private BiFunction<ReplRunner, Arguments, T> action;
-        private BiConsumer<ReplRunner, T> resultAction;
+        private BiFunction<ReplRunner, Arguments, R> action;
+        private BiConsumer<ReplRunner, R> resultAction;
         private boolean async = false;
 
         /**
@@ -363,10 +364,95 @@ public class Command<T> {
          * @param description description text
          * @return this builder
          */
-        public Builder<T> description(String description) {
+        public Builder<R> description(String description) {
             this.description = description;
             return this;
         }
+
+        /**
+         * Defines the main action to execute when the command is invoked,
+         * automatically binding command-line arguments into a typed object
+         * using {@link ArgumentBinder}.
+         *
+         * <p>Use this variant when the action produces a result.</p>
+         *
+         * <pre>{@code
+         * class MyArgs {
+         *     @CommandArgument
+         *     String name;
+         *
+         *     @OptionArgument(names = {"-n", "--number"})
+         *     int number;
+         * }
+         *
+         * registry.command("greet")
+         *     .action(MyArgs.class, (repl, parsed) -> {
+         *         repl.println("Hello " + parsed.name + ", number: " + parsed.number);
+         *         return parsed.number;
+         *     })
+         *     .result((repl, result) -> repl.println("Returned: " + result))
+         *     .build();
+         * }</pre>
+         *
+         * @param argClass type annotated with {@link com.ancevt.replines.core.argument.reflection.CommandArgument}
+         *                 and/or {@link com.ancevt.replines.core.argument.reflection.OptionArgument}
+         * @param function function taking {@link ReplRunner} and a parsed {@code T}, returning {@code R}
+         * @param <T>      argument model type
+         * @return this builder
+         */
+        public <T> Builder<R> action(Class<T> argClass, BiFunction<ReplRunner, T, R> function) {
+            this.action = (repl, args) -> {
+                try {
+                    T parsed = ArgumentBinder.convert(args, argClass);
+                    return function.apply(repl, parsed);
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to bind args", e);
+                }
+            };
+            return this;
+        }
+
+        /**
+         * Defines the main action to execute when the command is invoked,
+         * automatically binding command-line arguments into a typed object
+         * using {@link ArgumentBinder}.
+         *
+         * <p>Use this variant when the action has no return value
+         * (equivalent to returning {@code null}).</p>
+         *
+         * <pre>{@code
+         * class EchoArgs {
+         *     @CommandArgument
+         *     String text;
+         * }
+         *
+         * registry.command("echo")
+         *     .action(EchoArgs.class, (repl, parsed) -> {
+         *         repl.println("Echo: " + parsed.text);
+         *     })
+         *     .build();
+         * }</pre>
+         *
+         * @param argClass type annotated with {@link com.ancevt.replines.core.argument.reflection.CommandArgument}
+         *                 and/or {@link com.ancevt.replines.core.argument.reflection.OptionArgument}
+         * @param consumer consumer taking {@link ReplRunner} and a parsed {@code T}
+         * @param <T>      argument model type
+         * @return this builder (with result type {@code Void})
+         */
+        @SuppressWarnings("unchecked")
+        public <T> Builder<Void> action(Class<T> argClass, BiConsumer<ReplRunner, T> consumer) {
+            this.action = (repl, args) -> {
+                try {
+                    T parsed = ArgumentBinder.convert(args, argClass);
+                    consumer.accept(repl, parsed);
+                    return null;
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to bind args", e);
+                }
+            };
+            return (Builder<Void>) this;
+        }
+
 
         /**
          * Defines the main action to execute when the command is invoked.
@@ -375,7 +461,7 @@ public class Command<T> {
          *               returning a result of type {@code T}
          * @return this builder
          */
-        public Builder<T> action(BiFunction<ReplRunner, Arguments, T> action) {
+        public Builder<R> action(BiFunction<ReplRunner, Arguments, R> action) {
             this.action = action;
             return this;
         }
@@ -387,7 +473,7 @@ public class Command<T> {
          * @param consumer consumer taking {@link ReplRunner} and {@link Arguments}
          * @return this builder
          */
-        public Builder<T> action(BiConsumer<ReplRunner, Arguments> consumer) {
+        public Builder<R> action(BiConsumer<ReplRunner, Arguments> consumer) {
             this.action = (r, a) -> {
                 consumer.accept(r, a);
                 return null;
@@ -401,7 +487,7 @@ public class Command<T> {
          * @param resultAction consumer taking {@link ReplRunner} and the result value
          * @return this builder
          */
-        public Builder<T> result(BiConsumer<ReplRunner, T> resultAction) {
+        public Builder<R> result(BiConsumer<ReplRunner, R> resultAction) {
             this.resultAction = resultAction;
             return this;
         }
@@ -413,7 +499,7 @@ public class Command<T> {
          *
          * @return this builder
          */
-        public Builder<T> async() {
+        public Builder<R> async() {
             this.async = true;
             return this;
         }
@@ -423,8 +509,8 @@ public class Command<T> {
          *
          * @return new {@link Command} instance
          */
-        public Command<T> build() {
-            Command<T> command = new Command<>(commandWords, description, action, resultAction);
+        public Command<R> build() {
+            Command<R> command = new Command<>(commandWords, description, action, resultAction);
             command.setAsync(async);
             return command;
         }
