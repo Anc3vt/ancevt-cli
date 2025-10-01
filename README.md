@@ -334,28 +334,6 @@ You get:
 
 ---
 
-## 📦 Package Overview
-
-```
-com.ancevt.replines.core.argument
-  ├── Arguments              // Argument parser
-  ├── ArgumentParseException // Custom exception
-  └── ArgumentSplitHelper    // Tokenizer
-
-com.ancevt.replines.core.repl
-  ├── ReplRunner             // Main REPL loop
-  ├── CommandRegistry        // Stores commands
-  ├── Command                // Command definition
-  ├── UnknownCommandException// Error type
-  ├── ReplRunnerBuilder      // Fluent builder
-  └── annotation             // @ReplCommand, @ReplExecute
-
-com.ancevt.replines.filter
-  └── ColorizeFilter         // ANSI color tags
-```
-
----
-
 ## 📜 License
 
 Licensed under the Apache License, Version 2.0.
