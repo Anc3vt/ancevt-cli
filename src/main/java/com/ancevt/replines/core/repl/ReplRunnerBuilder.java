@@ -209,7 +209,7 @@ public class ReplRunnerBuilder {
                 })
                 .build();
 
-        registry.command("exit", "/q")
+        registry.command("exit")
                 .description("Exit the REPL")
                 .action((r, a) -> {
                     r.stop();
