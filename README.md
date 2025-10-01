@@ -1,5 +1,9 @@
 # Replines Core Library
 
+[![Maven Central](https://img.shields.io/maven-central/v/com.ancevt.replines/replines-core.svg)](https://central.sonatype.com/artifact/com.ancevt.replines/replines-core)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+
+
 A lightweight but powerful Java library for building **CLI tools** and **REPL (Read-Eval-Print Loop) applications**. It combines simple **argument parsing**, a **flexible command registry**, and a built-in **interactive shell**, giving you a production-ready CLI in just a few lines.
 
 This library is perfect for developer tools, admin consoles, embedded CLIs, or even educational projects where you want to experiment with command interpreters.
@@ -12,7 +16,6 @@ This library is perfect for developer tools, admin consoles, embedded CLIs, or e
 > It does **not** try to be a general-purpose language interpreter like Python or JavaScript REPLs.  
 > Instead, it’s closer to tools such as `bash`, `redis-cli`, or `psql` —  
 > interactive command environments built around a registry of commands.
-
 
 ---
 
@@ -225,6 +228,93 @@ ReplRunner repl = ReplRunner.builder()
     .withColorizer()
     .build();
 ```
+
+## 🪄 Reflection-based Argument Binding
+
+Replines allows you to **bind parsed arguments directly into Java objects** using annotations and reflection. This eliminates boilerplate parsing code and gives you strongly typed arguments for your commands.
+
+### Defining Argument Classes
+
+You can mark fields in a class with `@CommandArgument` (for positional args) and `@OptionArgument` (for named options):
+
+```java
+class MyArgs {
+    @CommandArgument
+    String name;
+
+    @OptionArgument(names = {"-c", "--count"}, required = true)
+    int count;
+
+    @OptionArgument(names = {"-f", "--flag"})
+    boolean flag;
+}
+```
+
+### Using with the Builder API
+
+The command builder integrates seamlessly with argument binding:
+
+```java
+registry.command("greet")
+    .description("Greets a user with options")
+    .action(MyArgs.class, (repl, args) -> {
+        repl.println("Hello, " + args.name + "!");
+        repl.println("Count: " + args.count);
+        repl.println("Flag: " + args.flag);
+    })
+    .build();
+```
+
+Now you can run:
+
+```
+> greet Alice --count 5 --flag
+Hello, Alice!
+Count: 5
+Flag: true
+```
+
+### With Return Values
+
+You can also return values from commands when binding arguments:
+
+```java
+static class SumArgs {
+    @CommandArgument String a;
+    @CommandArgument String b;
+}
+
+registry.command("sum")
+    .description("Adds two numbers")
+    .action(SumArgs.class, (repl, parsed) -> {
+        int result = Integer.parseInt(parsed.a) + Integer.parseInt(parsed.b);
+        repl.println("Result: " + result);
+        return result;
+    })
+    .result((repl, result) -> repl.println("Returned: " + result))
+    .build();
+```
+
+Output:
+
+```
+> sum 7 8
+Result: 15
+Returned: 15
+```
+
+---
+
+### 🔄 Comparison with Picocli
+
+Unlike **Picocli**, where argument binding is typically used for parsing command-line options of standalone applications, **Replines integrates reflection-based argument binding directly into its REPL command model**. This means:
+
+* You don’t need to manually wire up argument parsers inside your REPL.
+* Each command can have its own DTO with annotated fields.
+* Binding works seamlessly both in sync and async commands.
+
+This makes Replines particularly well-suited for **interactive shells** and **embedded admin consoles**, where commands are invoked repeatedly and need clean, strongly typed argument handling.
+
 
 You get:
 
