@@ -21,7 +21,6 @@ This library is perfect for developer tools, admin consoles, embedded CLIs, or e
 
 ## 📚 Table of Contents
 
-* [About](#-about)
 * [Why Replines?](#-why-not-just-picocli-or-jline)
 * [Features](#-features)
 * [Installation](#-installation)
