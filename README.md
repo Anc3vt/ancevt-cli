@@ -19,6 +19,37 @@ This library is perfect for developer tools, admin consoles, embedded CLIs, or e
 > Instead, it’s closer to tools such as `bash`, `redis-cli`, or `psql` —  
 > interactive command environments built around a registry of commands.
 
+## 📚 Table of Contents
+
+* [About](#-about)
+* [Why Replines?](#-why-not-just-picocli-or-jline)
+* [Features](#-features)
+* [Installation](#-installation)
+* [Quick Start](#-quick-start)
+* [Command Registration](#-command-registration)
+
+  * [Builder API](#builder-api)
+  * [Annotation-based](#annotation-based)
+* [Argument Parsing](#-argument-parsing)
+
+  * [Basic Usage](#basic-usage)
+  * [Supported Forms](#supported-forms)
+  * [Quoted Strings](#quoted-strings)
+  * [Iteration](#iteration)
+* [Async Execution](#-async-execution)
+* [Colorized Output](#-colorized-output)
+* [Default Commands](#-default-commands)
+* [Reflection-based Argument Binding](#-reflection-based-argument-binding)
+
+  * [Defining Argument Classes](#defining-argument-classes)
+  * [Using with Builder API](#using-with-the-builder-api)
+  * [With Return Values](#with-return-values)
+  * [Comparison with Picocli](#-comparison-with-picocli)
+* [Use Cases](#-use-cases)
+* [License](#-license)
+* [Contact](#-contact)
+
+
 ---
 
 ## 🚨 Why not just Picocli or JLine?
