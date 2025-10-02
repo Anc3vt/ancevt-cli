@@ -2,6 +2,8 @@
 
 [![Maven Central](https://img.shields.io/maven-central/v/com.ancevt.replines/replines-core.svg)](https://central.sonatype.com/artifact/com.ancevt.replines/replines-core)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+![Java](https://img.shields.io/badge/Java-8%2B-brightgreen)
+![Build](https://img.shields.io/badge/build-passing-success)
 
 
 A lightweight but powerful Java library for building **CLI tools** and **REPL (Read-Eval-Print Loop) applications**. It combines simple **argument parsing**, a **flexible command registry**, and a built-in **interactive shell**, giving you a production-ready CLI in just a few lines.
