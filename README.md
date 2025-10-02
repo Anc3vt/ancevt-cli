@@ -19,7 +19,7 @@ This library is perfect for developer tools, admin consoles, embedded CLIs, or e
 > Instead, it’s closer to tools such as `bash`, `redis-cli`, or `psql` —  
 > interactive command environments built around a registry of commands.
 
-## 📚 Table of Contents
+## Contents
 
 * [Why Replines?](#-why-not-just-picocli-or-jline)
 * [Features](#-features)
@@ -51,7 +51,7 @@ This library is perfect for developer tools, admin consoles, embedded CLIs, or e
 
 ---
 
-## 🚨 Why not just Picocli or JLine?
+##  Why not just Picocli or JLine?
 
 | Feature                   | Replines   | Picocli | JLine         |
 | ------------------------- |------------| ------- | ------------- |
@@ -66,7 +66,7 @@ With **Replines**, you don’t need to glue together multiple libraries — ever
 
 ---
 
-## ✨ Features
+##  Features
 
 * **Argument parsing** with support for:
 
@@ -84,7 +84,7 @@ With **Replines**, you don’t need to glue together multiple libraries — ever
 
 ---
 
-## 📥 Installation
+##  Installation
 ```xml
 <dependency>
   <groupId>com.ancevt.replines</groupId>
@@ -93,7 +93,7 @@ With **Replines**, you don’t need to glue together multiple libraries — ever
 </dependency>
 ```
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Before: the old way
 
@@ -128,7 +128,7 @@ pong
 
 ---
 
-## 🧩 Command Registration
+## Command Registration
 
 ### Builder API
 
@@ -170,7 +170,7 @@ new ReplRunner(registry).start();
 
 ---
 
-## ⚙️ Argument Parsing
+## Argument Parsing
 
 ### Basic usage
 
@@ -205,7 +205,7 @@ while (args.hasNext()) {
 
 ---
 
-## ⏳ Async Execution
+## Async Execution
 
 ```java
 registry.command("download")
@@ -233,7 +233,7 @@ registry.command("compute")
 
 ---
 
-## 🎨 Colorized Output
+## Colorized Output
 
 The built-in **ColorizeFilter** lets you add ANSI tags:
 
@@ -250,7 +250,7 @@ Available tags:
 
 ---
 
-## 🛠 Default Commands
+## Default Commands
 
 When using the builder API:
 
@@ -337,7 +337,7 @@ Returned: 15
 
 ---
 
-### 🔄 Comparison with Picocli
+### Comparison with Picocli
 
 Unlike **Picocli**, where argument binding is typically used for parsing command-line options of standalone applications, **Replines integrates reflection-based argument binding directly into its REPL command model**. This means:
 
@@ -355,7 +355,7 @@ You get:
 
 ---
 
-## 🔮 Use Cases
+## Use Cases
 
 * Interactive REPL shells for developer tools
 * Admin consoles for applications
@@ -366,7 +366,7 @@ You get:
 
 ---
 
-## 📜 License
+## License
 
 Licensed under the Apache License, Version 2.0.
 
@@ -374,6 +374,6 @@ See [LICENSE](LICENSE) and [notice.md](notice.md) for details.
 
 ---
 
-## 📬 Contact
+## Contact
 
 [me@ancevt.com](mailto:me@ancevt.com)
