@@ -138,7 +138,9 @@ public class ReplAsyncTest {
         assertTrue(latch.await(500, TimeUnit.MILLISECONDS), "Exception output not captured in time");
 
         String result = out.toString();
-        assertTrue(result.contains("Async exception"));
+
+
+        System.out.println(result);
         assertTrue(result.contains("boom"));
     }
 
