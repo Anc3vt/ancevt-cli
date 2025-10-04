@@ -38,20 +38,18 @@ class CommandBuilderBindActionTest {
     void testActionWithFunctionReturnsValue() {
         Command<String> cmd = Command.<String>builder("echo")
                 .action(EchoArgs.class, (repl, parsed) -> {
-                    // проверим, что биндинг сработал
                     assertEquals("hello", parsed.text);
                     assertEquals(42, parsed.number);
                     return "OK-" + parsed.text;
                 })
                 .build();
 
-        // подменим ReplRunner-заглушку
         ReplRunner dummy = new ReplRunner() {
             public void println(String s) { /* no-op */ }
         };
 
         Arguments args = Arguments.parse("hello -n 42");
-        args.skip(); // пропустить ключевое слово
+        args.skip();
         String result = cmd.getAction().apply(dummy, args);
 
         assertEquals("OK-hello", result);

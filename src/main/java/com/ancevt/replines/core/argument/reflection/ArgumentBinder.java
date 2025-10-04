@@ -57,44 +57,90 @@ public class ArgumentBinder {
      * @throws IllegalAccessException      if a field is not accessible
      * @throws ArgumentParseException      if a required option argument is missing
      */
+    @SuppressWarnings("unchecked")
     public static <T> T convert(Arguments args, T objectToFill) throws IllegalAccessException {
         Class<T> type = (Class<T>) objectToFill.getClass();
 
         for (Field field : type.getDeclaredFields()) {
 
+            // ===== Обработка позиционных аргументов =====
             CommandArgument commandArgumentAnnotation = field.getDeclaredAnnotation(CommandArgument.class);
             if (commandArgumentAnnotation != null) {
+                int index = 0;
+                try {
+                    // Совместимость со старой версией (без index)
+                    index = commandArgumentAnnotation.index();
+                } catch (Exception ignored) {
+                    // старые версии аннотации index не содержали
+                }
+
                 Class<?> t = field.getType();
                 field.setAccessible(true);
-                field.set(objectToFill, args.get(t, 0));
+
+                Object value = args.get(t, index);
+                if (value == null && commandArgumentAnnotation.required()) {
+                    throw new ArgumentParseException("Missing required positional argument at index " + index);
+                }
+
+                field.set(objectToFill, value);
                 continue;
             }
 
+            // ===== Обработка опциональных аргументов =====
             OptionArgument optionArgumentAnnotation = field.getDeclaredAnnotation(OptionArgument.class);
             if (optionArgumentAnnotation != null) {
 
                 boolean found = false;
-
                 String[] names = optionArgumentAnnotation.names();
+
                 if (names != null) {
                     for (String name : names) {
                         if (args.contains(name)) {
                             field.setAccessible(true);
-
                             Class<?> fieldType = field.getType();
 
-                            if (fieldType == boolean.class) {
-                                field.set(objectToFill, args.contains(name));
-                            } else {
-                                field.set(objectToFill, args.get(field.getType(), name));
+                            // --- Определяем конвертер ---
+                            Class<?> converterClass = null;
+                            try {
+                                converterClass = optionArgumentAnnotation.converter();
+                            } catch (Exception ignored) {
+                                // старые версии аннотации не содержат converter
                             }
+
+                            ArgumentConverter<?> converterInstance = null;
+                            if (converterClass != null
+                                    && converterClass != ArgumentConverter.NoConverter.class) {
+                                try {
+                                    converterInstance = (ArgumentConverter<?>) converterClass.getDeclaredConstructor().newInstance();
+                                } catch (Exception e) {
+                                    throw new ArgumentParseException(
+                                            "Failed to create converter for field '" + field.getName() + "'", e);
+                                }
+                            }
+
+                            // --- Определяем значение ---
+                            Object rawValue;
+                            if (fieldType == boolean.class || fieldType == Boolean.class) {
+                                rawValue = true; // если флаг просто присутствует
+                            } else {
+                                rawValue = args.get(fieldType, name);
+                            }
+
+                            Object finalValue = converterInstance != null
+                                    ? converterInstance.convert(String.valueOf(rawValue))
+                                    : rawValue;
+
+                            field.set(objectToFill, finalValue);
                             found = true;
+                            break;
                         }
                     }
                 }
 
-                if (optionArgumentAnnotation.required() && !found)
-                    throw new ArgumentParseException("required parameter " + Arrays.toString(names) + " not found");
+                if (optionArgumentAnnotation.required() && !found) {
+                    throw new ArgumentParseException(
+                            "Required parameter " + java.util.Arrays.toString(names) + " not found");
+                }
 
                 continue;
             }
@@ -102,6 +148,7 @@ public class ArgumentBinder {
 
         return objectToFill;
     }
+
 
     /**
      * Creates a new instance of the given class (using no-arg constructor),

@@ -237,18 +237,16 @@ public class Command<R> {
                         replRunner.println(String.valueOf(result));
                     }
                 }
-
-            } catch (Exception e) {
-                replRunner.println("Async exception: " + e.getMessage());
+            } catch (Throwable e) {
+                replRunner.getErrorHandler().handle(replRunner, e);
             }
         };
 
         Executor executor = replRunner.getExecutor();
-
         if (executor != null) {
             CompletableFuture.runAsync(task, executor);
         } else {
-            CompletableFuture.runAsync(task); // fallback: commonPool
+            CompletableFuture.runAsync(task);
         }
     }
 
