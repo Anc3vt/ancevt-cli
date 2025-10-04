@@ -18,7 +18,9 @@
 package com.ancevt.replines.core.repl;
 
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -197,15 +199,24 @@ public class ReplRunner {
     public void start(InputStream inputStream, OutputStream outputStream) throws IOException {
         this.inputStream = inputStream;
         this.outputStream = outputStream;
-        running = true;
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-        String line;
-        while (running && (line = bufferedReader.readLine()) != null) {
-            try {
-                execute(line);
-            } catch (UnknownCommandException e) {
-                outputStream.write(e.getMessage().getBytes(StandardCharsets.UTF_8));
-                outputStream.write("\n".getBytes(StandardCharsets.UTF_8));
+        this.running = true;
+
+        StringBuilder sb = new StringBuilder();
+        int ch;
+
+        while (running && (ch = inputStream.read()) != -1) {
+            if (ch == '\n') {
+                String line = sb.toString();
+                sb.setLength(0);
+
+                try {
+                    execute(line);
+                } catch (UnknownCommandException e) {
+                    outputStream.write(e.getMessage().getBytes(StandardCharsets.UTF_8));
+                    outputStream.write("\n".getBytes(StandardCharsets.UTF_8));
+                }
+            } else if (ch != '\r') {
+                sb.append((char) ch);
             }
         }
     }
