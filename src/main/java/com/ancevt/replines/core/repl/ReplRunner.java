@@ -171,12 +171,33 @@ public class ReplRunner {
 
     private final List<Function<String, String>> outputFilters = new ArrayList<>();
 
+    private ReplErrorHandler errorHandler = (r, e) -> {
+        String msg = e.getMessage() != null ? e.getMessage() : e.toString();
+        r.println("Error: " + msg);
+    };
+
     public ReplRunner() {
         this.registry = new CommandRegistry();
     }
 
     public ReplRunner(CommandRegistry registry) {
         this.registry = registry;
+    }
+
+    /**
+     * Sets a custom error handler invoked when a command fails or an unknown command is entered.
+     *
+     * @param handler the error handler
+     */
+    public void setErrorHandler(ReplErrorHandler handler) {
+        this.errorHandler = handler;
+    }
+
+    /**
+     * @return currently configured error handler
+     */
+    public ReplErrorHandler getErrorHandler() {
+        return errorHandler;
     }
 
     /**
@@ -295,10 +316,14 @@ public class ReplRunner {
             if (commandWord.equals(command.getCommandWord()) ||
                     command.getCommandWords().stream().anyMatch(s -> s.equals(commandWord))) {
 
-                if (command.isAsync()) {
-                    command.executeAsync(this, commandLine);
-                } else {
-                    command.execute(this, commandLine);
+                try {
+                    if (command.isAsync()) {
+                        command.executeAsync(this, commandLine);
+                    } else {
+                        command.execute(this, commandLine);
+                    }
+                } catch (Throwable t) {
+                    errorHandler.handle(this, t);
                 }
                 return;
             }
@@ -325,9 +350,8 @@ public class ReplRunner {
 
                 try {
                     execute(line);
-                } catch (UnknownCommandException e) {
-                    outputStream.write(e.getMessage().getBytes(StandardCharsets.UTF_8));
-                    outputStream.write("\n".getBytes(StandardCharsets.UTF_8));
+                } catch (Throwable t) {
+                    errorHandler.handle(this, t);
                 }
             } else if (ch != '\r') {
                 sb.append((char) ch);
