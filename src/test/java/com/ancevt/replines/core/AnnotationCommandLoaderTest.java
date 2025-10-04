@@ -111,7 +111,7 @@ public class AnnotationCommandLoaderTest {
     }
 
     @Test
-    public void testUnknownAnnotatedCommandFailsGracefully() throws IOException {
+    public void testUnknownAnnotatedCommandFailsGracefully() {
         CommandRegistry registry = new CommandRegistry();
         ReplRunner repl = new ReplRunner(registry);
 

@@ -44,4 +44,6 @@ import static java.lang.annotation.ElementType.FIELD;
 @Target({FIELD})
 public @interface CommandArgument {
     boolean required() default true;
+
+    int index() default 0;
 }

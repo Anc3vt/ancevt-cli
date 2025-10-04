@@ -19,6 +19,8 @@
 package com.ancevt.replines.core.argument;
 
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static java.lang.String.format;
@@ -405,7 +407,18 @@ public class Arguments implements Iterable<String> {
         return get(String.class, keys);
     }
 
+    @SuppressWarnings("unchecked")
     private <T> T convertToType(String element, Class<T> type) {
+        if (List.class.isAssignableFrom(type)) {
+            String[] parts = element.split(",");
+            return (T) java.util.Arrays.asList(parts);
+        }
+
+        if (Set.class.isAssignableFrom(type)) {
+            String[] parts = element.split(",");
+            return (T) new java.util.HashSet<>(java.util.Arrays.asList(parts));
+        }
+
         if (type == String.class) {
             return (T) element;
         } else if (type == boolean.class || type == Boolean.class) {
@@ -422,6 +435,14 @@ public class Arguments implements Iterable<String> {
             return (T) Double.valueOf(element);
         } else if (type == byte.class || type == Byte.class) {
             return (T) Byte.valueOf(element);
+        } else if (type.isEnum()) {
+            try {
+                @SuppressWarnings("unchecked")
+                T value = (T) Enum.valueOf((Class<Enum>) type.asSubclass(Enum.class), element.toUpperCase());
+                return value;
+            } catch (IllegalArgumentException e) {
+                throw new ArgumentParseException("Invalid enum value '" + element + "' for " + type.getSimpleName());
+            }
         } else {
             throw new ArgumentParseException("Type " + type + " not supported");
         }

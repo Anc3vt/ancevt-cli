@@ -32,17 +32,131 @@ import java.util.function.Function;
 import static java.lang.String.format;
 
 /**
- * Core REPL (Read-Eval-Print Loop) runner.
- * Handles command execution, input/output streams, and lifecycle.
+ * Central execution engine of the REPLines framework — the core Read-Eval-Print Loop runner.
+ * <p>
+ * The {@code ReplRunner} is responsible for:
+ * <ul>
+ *   <li>reading command lines from an {@link InputStream};</li>
+ *   <li>parsing and executing commands via a {@link CommandRegistry};</li>
+ *   <li>handling output and applying filters (e.g. colorization);</li>
+ *   <li>managing asynchronous command execution through an {@link Executor};</li>
+ *   <li>providing lifecycle control (start, stop, isRunning, etc.).</li>
+ * </ul>
  *
- * Typical usage:
+ * <h2>Overview</h2>
+ * A {@code ReplRunner} implements a standard REPL loop — reading text lines, parsing the first token as a command word,
+ * and executing the corresponding {@link Command}. It integrates closely with {@link CommandRegistry} and supports
+ * both synchronous and asynchronous command invocation.
+ *
+ * <h2>Typical Usage</h2>
+ * <pre>{@code
+ * ReplRunner repl = ReplRunner.builder()
+ *     .withDefaultCommands()
+ *     .withColorizer()
+ *     .configure(reg -> {
+ *         reg.command("echo")
+ *            .description("Prints all arguments back")
+ *            .action((r, a) -> r.println(String.join(" ", a.getElements())))
+ *            .build();
+ *     })
+ *     .build();
+ *
+ * repl.start(System.in, System.out);
+ * }</pre>
+ *
+ * <h2>Command Execution Model</h2>
+ * When the user types a line:
  * <pre>
- *     ReplRunner repl = ReplRunner.builder()
- *         .withDefaultCommands()
- *         .build();
- *     repl.start(System.in, System.out);
+ *     compute 1 2 3
  * </pre>
+ * <ul>
+ *   <li>The first token (<b>compute</b>) is treated as the command word.</li>
+ *   <li>All subsequent tokens are passed to the command as {@link com.ancevt.replines.core.argument.Arguments}.</li>
+ *   <li>If the command is marked as asynchronous via {@link Command#setAsync(boolean)}, it will be executed using
+ *       {@link #getExecutor()}.</li>
+ * </ul>
+ *
+ * <h2>Input and Output Streams</h2>
+ * The REPL reads user input from an {@link InputStream} (line by line) and writes all output to an {@link OutputStream}.
+ * The developer can replace {@link System#in} and {@link System#out} with custom streams, e.g. for Swing or network integration.
+ *
+ * <h2>Output Filters</h2>
+ * Output filters allow dynamic transformation of printed text — for example, applying ANSI color codes or formatting.
+ * Filters are applied in the order they were added via {@link #addOutputFilter(Function)}.
+ *
+ * <pre>{@code
+ * ReplRunner repl = new ReplRunner();
+ * repl.addOutputFilter(text -> text.replace("ERROR", "<red>ERROR<>"));
+ * }</pre>
+ *
+ * <h2>Asynchronous Execution</h2>
+ * The REPL supports async command processing using an {@link Executor}.
+ * If none is provided explicitly, a default {@link java.util.concurrent.Executors#newCachedThreadPool()} is used.
+ * The executor can be automatically shut down on {@link #stop()} if created internally.
+ *
+ * <pre>{@code
+ * repl.getRegistry().command("compute")
+ *     .description("Simulates a background computation")
+ *     .action((r, a) -> {
+ *         Thread.sleep(1000);
+ *         return 42;
+ *     })
+ *     .result((r, result) -> r.println("Answer: " + result))
+ *     .async()
+ *     .build();
+ * }</pre>
+ *
+ * <h2>Lifecycle</h2>
+ * <ul>
+ *   <li>{@link #start()} — starts the REPL loop using {@link System#in}/{@link System#out}.</li>
+ *   <li>{@link #start(InputStream, OutputStream)} — starts with custom I/O.</li>
+ *   <li>{@link #stop()} — gracefully stops the REPL and optionally shuts down its executor.</li>
+ *   <li>{@link #isRunning()} — returns whether the REPL loop is active.</li>
+ * </ul>
+ *
+ * <h2>Error Handling</h2>
+ * Unknown or malformed commands result in an {@link UnknownCommandException}.
+ * The error message is printed directly into the output stream.
+ *
+ * <pre>{@code
+ * UnknownCommandException e -> "Unknown command: xyz"
+ * }</pre>
+ *
+ * <h2>Extensibility</h2>
+ * {@code ReplRunner} can be extended or customized:
+ * <ul>
+ *   <li>by subclassing and overriding {@link #execute(String)} to modify parsing logic;</li>
+ *   <li>by registering additional output filters;</li>
+ *   <li>by replacing {@link CommandRegistry} via {@link #setRegistry(CommandRegistry)};</li>
+ *   <li>or by composing through {@link ReplRunnerBuilder}.</li>
+ * </ul>
+ *
+ * <h2>Builder Integration</h2>
+ * For fluent configuration, use {@link ReplRunnerBuilder}:
+ * <pre>{@code
+ * ReplRunner repl = ReplRunner.builder()
+ *     .withRegistry(new CommandRegistry())
+ *     .withColorizer()
+ *     .withDefaultCommands()
+ *     .autoShutdownExecutor(true)
+ *     .build();
+ * }</pre>
+ *
+ * <h2>Thread Safety</h2>
+ * The REPL loop runs in a single thread, but asynchronous commands may run concurrently
+ * using a shared or external {@link Executor}.
+ * Adding or removing output filters should be done before calling {@link #start()}.
+ *
+ * <h2>See Also</h2>
+ * <ul>
+ *   <li>{@link Command}</li>
+ *   <li>{@link CommandRegistry}</li>
+ *   <li>{@link ReplRunnerBuilder}</li>
+ *   <li>{@link com.ancevt.replines.filter.ColorizeFilter}</li>
+ * </ul>
+ *
  */
+
 public class ReplRunner {
 
     private CommandRegistry registry;
