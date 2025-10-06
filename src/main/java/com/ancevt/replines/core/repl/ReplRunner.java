@@ -18,6 +18,7 @@
 package com.ancevt.replines.core.repl;
 
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -169,6 +170,8 @@ public class ReplRunner {
     private Executor executor;
     private boolean shutdownExecutorOnStop = false;
 
+    private String commandFilterPrefix = "/";
+
     private final List<Function<String, String>> outputFilters = new ArrayList<>();
 
     private ReplErrorHandler errorHandler = (r, e) -> {
@@ -182,6 +185,14 @@ public class ReplRunner {
 
     public ReplRunner(CommandRegistry registry) {
         this.registry = registry;
+    }
+
+    public void setCommandFilterPrefix(String commandFilterPrefix) {
+        this.commandFilterPrefix = commandFilterPrefix;
+    }
+
+    public String getCommandFilterPrefix() {
+        return commandFilterPrefix;
     }
 
     /**
@@ -322,8 +333,8 @@ public class ReplRunner {
                     } else {
                         command.execute(this, commandLine);
                     }
-                } catch (Throwable t) {
-                    errorHandler.handle(this, t);
+                } catch (Exception e) {
+                    errorHandler.handle(this, e);
                 }
                 return;
             }
@@ -340,21 +351,24 @@ public class ReplRunner {
         this.outputStream = outputStream;
         this.running = true;
 
-        StringBuilder sb = new StringBuilder();
-        int ch;
+        ByteArrayOutputStream lineBuffer = new ByteArrayOutputStream();
 
-        while (running && (ch = inputStream.read()) != -1) {
-            if (ch == '\n') {
-                String line = sb.toString();
-                sb.setLength(0);
+        int b;
+        while (running && (b = inputStream.read()) != -1) {
+            if (b == '\n') {
+                byte[] bytes = lineBuffer.toByteArray();
+                String line = new String(bytes, StandardCharsets.UTF_8);
+                lineBuffer.reset();
 
                 try {
-                    execute(line);
-                } catch (Throwable t) {
-                    errorHandler.handle(this, t);
+                    if (line.startsWith(commandFilterPrefix)) {
+                        execute(line);
+                    }
+                } catch (Exception e) {
+                    errorHandler.handle(this, e);
                 }
-            } else if (ch != '\r') {
-                sb.append((char) ch);
+            } else if (b != '\r') {
+                lineBuffer.write(b);
             }
         }
     }
@@ -404,7 +418,7 @@ public class ReplRunner {
     public static void main(String[] args) throws IOException {
         ReplRunner repl = ReplRunner.builder()
                 .configure(reg -> {
-                    reg.command("test")
+                    reg.command("/test")
                             .description("Prints each argument with index")
                             .action((r, a) -> {
                                 r.println("tested");
@@ -421,7 +435,7 @@ public class ReplRunner {
                 .build();
 
 
-        repl.getRegistry().command("compute")
+        repl.getRegistry().command("/compute")
                 .action((r, a) -> {
                     try {
                         Thread.sleep(1000);

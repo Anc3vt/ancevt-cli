@@ -88,10 +88,6 @@ public class ReplSwingConnector {
             if (clearOnEnter) inputField.setText("");
         };
 
-        for (ActionListener al : inputField.getActionListeners()) {
-            inputField.removeActionListener(al);
-        }
-
         inputField.addActionListener(action);
     }
 
