@@ -184,6 +184,13 @@ public class ReplRunnerBuilder {
     private final List<Consumer<CommandRegistry>> registryActions = new ArrayList<>();
     private boolean useColorizer;
     private ReplErrorHandler errorHandler;
+    private String commandFilterPrefix = "/";
+
+
+    public ReplRunnerBuilder withCommandFilterPrefix(String prefix) {
+        this.commandFilterPrefix = prefix;
+        return this;
+    }
 
     /**
      * Sets the input stream for the REPL.
@@ -326,6 +333,8 @@ public class ReplRunnerBuilder {
             repl.setErrorHandler(errorHandler);
         }
 
+        repl.setCommandFilterPrefix(commandFilterPrefix);
+
         return repl;
     }
 
@@ -341,14 +350,14 @@ public class ReplRunnerBuilder {
     }
 
     private static void registerDefaultCommands(CommandRegistry registry) {
-        registry.command("help")
+        registry.command("/help")
                 .description("Shows help info")
                 .action((r, a) -> {
                     r.println("<g>" + r.getRegistry().formattedCommandList());
                 })
                 .build();
 
-        registry.command("exit")
+        registry.command("/exit")
                 .description("Exit the REPL")
                 .action((r, a) -> {
                     r.stop();

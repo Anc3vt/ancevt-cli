@@ -46,10 +46,8 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class PushableInputStream extends InputStream {
 
-    /**
-     * Internal buffer queue holding input bytes.
-     */
     private final BlockingQueue<Byte> queue = new LinkedBlockingQueue<>();
+    private volatile boolean closed = false;
 
     /**
      * Pushes a single line of text to the stream.
@@ -58,11 +56,7 @@ public class PushableInputStream extends InputStream {
      * @param line the line of input to be added to the stream
      */
     public void pushLine(String line) {
-        byte[] bytes = line.getBytes(StandardCharsets.UTF_8);
-        for (byte b : bytes) {
-            queue.add(b);
-        }
-        queue.add((byte) '\n');
+        pushBytes((line + "\n").getBytes(StandardCharsets.UTF_8));
     }
 
     /**
@@ -87,10 +81,20 @@ public class PushableInputStream extends InputStream {
     @Override
     public int read() throws IOException {
         try {
-            return queue.take() & 0xFF;
+            while (true) {
+                if (closed && queue.isEmpty()) return -1;
+                Byte b = queue.poll();
+                if (b != null) return b & 0xFF;
+                Thread.sleep(5);
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new IOException("Interrupted while reading input", e);
+            throw new IOException("Interrupted", e);
         }
+    }
+
+    @Override
+    public void close() {
+        closed = true;
     }
 }

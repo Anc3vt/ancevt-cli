@@ -19,6 +19,9 @@
 package com.ancevt.replines.core.repl.integration;
 
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -39,8 +42,7 @@ import java.util.function.Consumer;
  */
 public class LineCallbackOutputStream extends OutputStream {
 
-    /** Internal buffer to accumulate characters until newline. */
-    private final StringBuilder buffer = new StringBuilder();
+    private final List<Byte> byteBuffer = new ArrayList<>();
 
     /** Callback that receives complete lines (excluding the newline character). */
     private final Consumer<String> callback;
@@ -68,7 +70,7 @@ public class LineCallbackOutputStream extends OutputStream {
         if (b == '\n') {
             flushBuffer();
         } else {
-            buffer.append((char) b);
+            byteBuffer.add((byte) b);
         }
     }
 
@@ -86,8 +88,16 @@ public class LineCallbackOutputStream extends OutputStream {
      * then clears the buffer.
      */
     private void flushBuffer() {
-        if (buffer.length() == 0) return;
-        callback.accept(buffer.toString());
-        buffer.setLength(0);
+        if (byteBuffer.isEmpty()) return;
+
+        byte[] bytes = new byte[byteBuffer.size()];
+        for (int i = 0; i < byteBuffer.size(); i++) {
+            bytes[i] = byteBuffer.get(i);
+        }
+
+        String line = new String(bytes, StandardCharsets.UTF_8);
+        callback.accept(line);
+
+        byteBuffer.clear();
     }
 }
