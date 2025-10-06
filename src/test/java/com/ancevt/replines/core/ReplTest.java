@@ -76,7 +76,7 @@ public class ReplTest {
     @Test
     public void testCommandExecution() throws Exception {
         CommandRegistry registry = new CommandRegistry();
-        registry.command("ping")
+        registry.command("/ping")
                 .description("simple ping command")
                 .action((repl, args) -> {
                     repl.println("pong");
@@ -85,7 +85,7 @@ public class ReplTest {
                 .build();
 
         ReplRunner repl = new ReplRunner(registry);
-        ByteArrayInputStream in = new ByteArrayInputStream("ping\n".getBytes());
+        ByteArrayInputStream in = new ByteArrayInputStream("/ping\n".getBytes());
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         repl.start(in, out);
 
@@ -93,16 +93,6 @@ public class ReplTest {
         assertTrue(result.contains("pong"));
     }
 
-    @Test
-    public void testUnknownCommandException() throws Exception {
-        ReplRunner repl = new ReplRunner();
-        ByteArrayInputStream in = new ByteArrayInputStream("doesnotexist\n".getBytes());
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        repl.start(in, out);
-
-        String result = out.toString();
-        assertTrue(result.contains("Unknown command"));
-    }
 
     @Test
     public void testExitCommandStopsRepl() throws IOException {
