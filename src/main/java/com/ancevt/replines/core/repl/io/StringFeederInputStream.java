@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.ancevt.replines.core.repl.integration;
+package com.ancevt.replines.core.repl.io;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +42,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  *
  * <p><b>Thread safety:</b> the class is thread-safe — multiple threads can safely push data.</p>
  */
-public class PushableInputStream extends InputStream {
+public class StringFeederInputStream extends InputStream {
 
     private final BlockingQueue<Byte> queue = new LinkedBlockingQueue<>();
     private volatile boolean closed = false;
