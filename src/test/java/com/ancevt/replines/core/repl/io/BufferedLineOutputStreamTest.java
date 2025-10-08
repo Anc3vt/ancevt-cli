@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.ancevt.replines.core.repl.integration;
+package com.ancevt.replines.core.repl.io;
 
 import org.junit.jupiter.api.Test;
 
@@ -26,12 +26,12 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class LineCallbackOutputStreamTest {
+class BufferedLineOutputStreamTest {
 
     @Test
     void shouldCallCallbackWhenNewlineIsWritten() throws IOException {
         List<String> lines = new ArrayList<>();
-        LineCallbackOutputStream out = new LineCallbackOutputStream(lines::add);
+        BufferedLineOutputStream out = new BufferedLineOutputStream(lines::add);
 
         out.write("hello\nworld\n".getBytes());
 
@@ -43,7 +43,7 @@ class LineCallbackOutputStreamTest {
     @Test
     void shouldIgnoreCarriageReturns() throws IOException {
         List<String> lines = new ArrayList<>();
-        LineCallbackOutputStream out = new LineCallbackOutputStream(lines::add);
+        BufferedLineOutputStream out = new BufferedLineOutputStream(lines::add);
 
         out.write("a\r\nb\n".getBytes());
 
@@ -55,7 +55,7 @@ class LineCallbackOutputStreamTest {
     @Test
     void shouldFlushPartialLineWhenFlushIsCalled() throws IOException {
         List<String> lines = new ArrayList<>();
-        LineCallbackOutputStream out = new LineCallbackOutputStream(lines::add);
+        BufferedLineOutputStream out = new BufferedLineOutputStream(lines::add);
 
         out.write('p');
         out.write('i');

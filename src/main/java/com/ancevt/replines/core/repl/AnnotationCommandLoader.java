@@ -58,7 +58,7 @@ import java.util.function.BiFunction;
  * AnnotationCommandLoader.load(registry, HelloCommand.class);
  * </pre>
  */
-class AnnotationCommandLoader {
+public class AnnotationCommandLoader {
 
     /**
      * Loads commands from a set of instances.

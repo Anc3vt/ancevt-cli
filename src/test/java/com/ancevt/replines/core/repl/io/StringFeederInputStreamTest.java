@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.ancevt.replines.core.repl.integration;
+package com.ancevt.replines.core.repl.io;
 
 import org.junit.jupiter.api.Test;
 
@@ -26,11 +26,11 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class PushableInputStreamTest {
+class StringFeederInputStreamTest {
 
     @Test
     void pushLine_shouldReturnCharactersWithNewline() throws IOException {
-        PushableInputStream in = new PushableInputStream();
+        StringFeederInputStream in = new StringFeederInputStream();
         in.pushLine("hello");
 
         List<Character> result = new ArrayList<>();
@@ -43,7 +43,7 @@ class PushableInputStreamTest {
 
     @Test
     void pushBytes_shouldReturnExactBytes() throws IOException {
-        PushableInputStream in = new PushableInputStream();
+        StringFeederInputStream in = new StringFeederInputStream();
         byte[] input = {65, 66, 67};
         in.pushBytes(input);
 

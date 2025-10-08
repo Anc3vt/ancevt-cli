@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.ancevt.replines.core.repl.integration;
+package com.ancevt.replines.core.repl.io;
 
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -40,7 +40,7 @@ import java.util.function.Consumer;
  * out.write("hello\nworld\n".getBytes());
  * }</pre>
  */
-public class LineCallbackOutputStream extends OutputStream {
+public class BufferedLineOutputStream extends OutputStream {
 
     private final List<Byte> byteBuffer = new ArrayList<>();
 
@@ -52,7 +52,7 @@ public class LineCallbackOutputStream extends OutputStream {
      *
      * @param callback a Consumer that will receive each line (without newline) when a '\n' is written
      */
-    public LineCallbackOutputStream(Consumer<String> callback) {
+    public BufferedLineOutputStream(Consumer<String> callback) {
         this.callback = callback;
     }
 
