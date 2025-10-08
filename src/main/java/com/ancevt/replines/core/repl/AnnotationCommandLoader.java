@@ -36,7 +36,7 @@ import java.util.function.BiFunction;
  * and registers discovered commands into a {@link CommandRegistry}.
  * </p>
  *
- * <h3>Supported cases:</h3>
+ * Supported cases:
  * <ul>
  *     <li><b>Class-level</b>: a class annotated with {@link ReplCommand} containing
  *     a method annotated with {@link ReplExecute}.</li>
